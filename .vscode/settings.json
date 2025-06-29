@@ -1,0 +1,3 @@
+{
+  "typescript.tsserver.exclude": ["**/node_modules"]
+}
