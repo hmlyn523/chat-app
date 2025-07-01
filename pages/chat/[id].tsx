@@ -6,25 +6,38 @@ import { useUser } from '@supabase/auth-helpers-react'
 
 export default function ChatRoom() {
     const router = useRouter()
-    //  const chatId = router.query.chatId as string
-    const chatIdRaw = router.query.id // URLパラメータ名が [id].tsx なので `id` です！
+
+    // router.query.id: URLの chat/[id] に対応するチャットIDを取得
+
+    // URLの /chat/[id]の 'id' を取得
+    const chatIdRaw = router.query.id
     const chatId = Array.isArray(chatIdRaw) ? chatIdRaw[0] : chatIdRaw
 
-    const [messages, setMessages] = useState<any[]>([])
-    const [input, setInput] = useState('')
-    const [members, setMembers] = useState<any[]>([])
-    const [allUsers, setAllUsers] = useState<any[]>([])
+    // useState: 状態を管理。チャット、入力、参加者などを保存
 
-    const messagesEndRef = useRef<HTMLDivElement>(null)
+    const [messages, setMessages] = useState<any[]>([]) // チャットメッセージ一覧
+    const [input, setInput] = useState('')              // 入力中のメッセージ
+    const [members, setMembers] = useState<any[]>([])   // 参加メンバー一覧
+    const [allUsers, setAllUsers] = useState<any[]>([]) // 全ユーザー（招待用）
 
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-    const currentUserIdRef = useRef<string | null>(null)
+    // useRef: DOM要素（スクロール位置）や変数（ユーザーID）の最新値の保持に使用
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const messagesEndRef = useRef<HTMLDivElement>(null) // スクロール位置の管理用
+
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null) // 自分のユーザーID
+    const currentUserIdRef = useRef<string | null>(null) // 常に最新のユーザーIDを保持
+
+    // メッセージ一覧の一番下までスクロール
+    // const scrollToBottom = () => {
+    //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // }
+    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+        requestAnimationFrame(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior })
+        })
     }
 
-    // メンバー取得
+    // チャットルームのメンバー一覧を取得
     const fetchMembers = async () => {
         const { data, error } = await supabase
             .from('chat_members')
@@ -38,15 +51,15 @@ export default function ChatRoom() {
         }
     }
 
-    // 全ユーザー取得
+    // 全ユーザーを取得（未参加者を表示するため）
     const fetchUsers = async () => {
         const { data, error } = await supabase
             .from('users')
             .select('id, email')
-
         if (error) {
             console.error('ユーザー一覧取得失敗:', error)
         } else {
+            // 招待できるユーザー一覧を表示するために使用
             setAllUsers(data || [])
         }
     }
@@ -64,7 +77,7 @@ export default function ChatRoom() {
         const { error } = await supabase
             .from('message_reads')
             .upsert(inserts, {
-                onConflict: 'message_id,user_id', // ← string に修正
+                onConflict: 'message_id,user_id',
             })
 
         if (error) {
@@ -73,15 +86,25 @@ export default function ChatRoom() {
     }
 
     // メッセージ一覧取得＋リアルタイム購読
+    //   useEffect は、React のフックの一つで、コンポーネントのレンダリング後に副作用
+    //   （データの取得、DOMの操作、タイマーなど）を実行するために使用される
     useEffect(() => {
+        // チャットIDチェック
+        //   URLから取得した chatId がまだ undefined のときは処理を止める
+        //   これは Next.js の router.query が初期は undefined になることがあるため
         if (!chatId) return
 
+        // 現在のユーザーIDの同期
+        //   urrentUserId は React の状態管理なので非同期レンダリングでタイミングがズレる可能性がある
+        //   そのため、常に最新の値を useRef で保持し、リアルタイム処理内でも使えるようにしている
         if (currentUserId !== null) {
             currentUserIdRef.current = currentUserId
         }
 
-        // 既存メッセージ取得
+        // メッセージ一覧と既読処理
         const fetchMessagesAndMarkRead = async () => {
+            // ここで現在のユーザー情報を取得しているが、setCurrentUserId が遅れて効くことがあるため、
+            // 先に user.id を変数として使う。
             const { data: userResponse } = await supabase.auth.getUser()
             const user = userResponse?.user
             if (!user) return
@@ -90,6 +113,10 @@ export default function ChatRoom() {
                 setCurrentUserId(data?.user?.id ?? null)
             })
 
+            // メッセージ本体の取得と既読登録
+            // messages テーブルから取得: 指定されたチャットIDのメッセージをすべて取得
+            // users ( email ): ユーザーIDに紐づくメールアドレスも取得（JOIN）
+            // markMessagesAsRead: 取得したメッセージを「既読」として登録
             const { data, error } = await supabase
             .from('messages')
                 .select(`
@@ -107,21 +134,29 @@ export default function ChatRoom() {
             } else {
                 setMessages(data || [])
 
+                // 描画が終わるまで待ってから瞬時に一番下へ
+                // setTimeout(() => {
+                //     scrollToBottom('auto')
+                // }, 0)
                 // 表示したメッセージのIDだけ既読登録
-                // const messageIds = messages?.map((m) => m.id) || []
                 const messageIds = (data || []).map((m) => m.id)
+                // 取得したメッセージを「既読」として登録
                 await markMessagesAsRead(messageIds, user.id)
             }
         }
+
         fetchMessagesAndMarkRead()
         //  fetchMessages()
         fetchMembers()
         fetchUsers()
         // scrollToBottom()
 
-        // リアルタイム購読セットアップ
+        // リアルタイム購読
         const channel = supabase
+            // Supabaseの realtime 機能で messages テーブルに新しい行（INSERT）が
+            // 追加されたときに発火する
             .channel('public:messages')
+            // チャットIDでフィルターされているので、自分がいるルームのメッセージのみが対象
             .on(
                 'postgres_changes',
                 {
@@ -133,7 +168,10 @@ export default function ChatRoom() {
                 async (payload) => {
                     const newMessage = payload.new
 
-                    // user_id から email を取得
+                    // emailを取得してスクロール制御
+                    // user_id → email を再取得: メッセージには user_id しか入ってないので表示名にするために email を取得
+                    // setMessages: 受信メッセージ一覧に新しいメッセージを追加
+                    // scrollToBottom():	自分の投稿だったら下まで自動スクロールする
                     const { data: userData, error: userError } = await supabase
                         .from('users')
                         .select('email')
@@ -144,6 +182,7 @@ export default function ChatRoom() {
                         console.error('ユーザー情報取得失敗:', userError.message)
                     }
 
+                    // setMessages: 受信メッセージ一覧に新しいメッセージを追加
                     setMessages((current) => {
                         const updated = [
                             ...current,
@@ -154,125 +193,121 @@ export default function ChatRoom() {
                         ]
 
                         // 自分の投稿ならスクロール
-                        if (newMessage.user_id === currentUserId) {
+                        if (newMessage.user_id === currentUserId ||
+                            newMessage.user_id === currentUserIdRef.current) {
                             setTimeout(() => scrollToBottom(), 100)
                         }
 
-                          // ✅ 最新の userId を参照して比較
-                        if (newMessage.user_id === currentUserIdRef.current) {
-                            setTimeout(() => scrollToBottom(), 100)
-                        }
                         return updated
                     })
-                    // setMessages((current) => {
-                    //     const updated = [...current, payload.new]
-                    //     // ✅ 自分の投稿ならスクロール
-                    //     if (payload.new.user_id === currentUserId) {
-                    //         setTimeout(() => scrollToBottom(), 100)
-                    //     }
-                    //     return updated
-                    // })
                 }
             )
             .subscribe()
 
         // 購読解除
+        // コンポーネントがアンマウントされた時（例：チャットを抜けたとき）に、リアルタイム購読を解除
+        // これにより、メモリリークや不要なリアルタイム更新を防ぐ
         return () => {
             supabase.removeChannel(channel)
         }
     }, [chatId, currentUserId])
 
-  // メッセージ送信
-  const sendMessage = async () => {
-    if (!input.trim()) return
+    // メッセージ送信
+    const sendMessage = async () => {
+        if (!input.trim()) return
 
-    const userResponse = await supabase.auth.getUser()
-    const user = userResponse.data?.user
-    if (!user) return
+        const userResponse = await supabase.auth.getUser()
+        const user = userResponse.data?.user
+        if (!user) return
 
-console.log('送信データ:', {
-  chat_id: chatId,
-  user_id: user?.id,
-  content: input,
-})
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([{ chat_id: chatId, user_id: user.id, content: input }])
-    if (error) {
-      alert('メッセージ送信に失敗しました')
-    } else {
-      setInput('')
+        const { error } = await supabase
+            .from('messages')
+            .insert([{ chat_id: chatId, user_id: user.id, content: input }])
+        if (error) {
+            alert('メッセージ送信に失敗しました')
+        } else {
+            setInput('')
+        }
     }
-  }
 
-return (
-  <div>
-    <button
-      onClick={() => router.push('/')}
-      className="p-2 mb-4 bg-gray-200 rounded hover:bg-gray-300"
-    >
-      ← チャット一覧に戻る
-    </button>
-    <h1>チャットルーム {chatId}</h1>
+    return (
+        <div>
+            {/* チャット一覧に戻るボタン */}
+            <button
+            onClick={() => router.push('/')}
+            className="p-2 mb-4 bg-gray-200 rounded hover:bg-gray-300"
+            >
+            ← チャット一覧に戻る
+            </button>
 
-    {/* ここに参加メンバー一覧 */}
-    <div>
-      <h2>参加メンバー</h2>
-      <ul>
-        {members.map((m) => (
-          <li key={m.user_id}>{m.users?.email}</li>
-        ))}
-      </ul>
-    </div>
+            {/* チャットID表示（開発・デバッグ用） */}
+            <h1>チャットルーム {chatId}</h1>
 
-    {/* ここに招待できるユーザー一覧 */}
-    <div>
-      <h2>招待できるユーザー</h2>
-      <ul>
-        {allUsers
-          .filter((u) => !members.find((m) => m.user_id === u.id))
-          .map((user) => (
-            <li key={user.id}>
-              {user.email}
-              <button
-                onClick={async () => {
-                  const { error } = await supabase
-                    .from('chat_members')
-                    .insert([{ chat_id: chatId, user_id: user.id }])
-                  if (!error) {
-                    setMembers((prev) => [
-                      ...prev,
-                      { user_id: user.id, users: { email: user.email } },
-                    ])
-                  }
-                }}
-              >
-                招待
-              </button>
-            </li>
-          ))}
-      </ul>
-    </div>
+            {/* 参加メンバー一覧 */}
+            <div>
+                <h2>参加メンバー</h2>
+                <ul>
+                    {members.map((m) => (
+                        <li key={m.user_id}>
+                            {/* メールアドレスを表示（なければUUID） */}
+                            {m.users?.email}
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-    {/* 既存のメッセージ一覧 */}
-    <div style={{ height: '300px', overflowY: 'scroll' }}>
-      {messages.map((msg) => (
-        <div key={msg.id}>
-          <b>{msg.users?.email ?? msg.user_id}</b>: {msg.content}
+            {/* 招待可能なユーザー一覧（まだ参加していない人） */}
+            <div>
+            <h2>招待できるユーザー</h2>
+            <ul>
+                {allUsers
+                .filter((u) => !members.find((m) => m.user_id === u.id))
+                .map((user) => (
+                    <li key={user.id}>
+                    {user.email}
+                    <button
+                        onClick={async () => {
+                        const { error } = await supabase
+                            .from('chat_members')
+                            .insert([{ chat_id: chatId, user_id: user.id }])
+                        if (!error) {
+                            // UIにも反映させる
+                            setMembers((prev) => [
+                                ...prev,
+                                { user_id: user.id, users: { email: user.email } },
+                            ])
+                        }
+                        }}
+                    >
+                        招待
+                    </button>
+                    </li>
+                ))}
+            </ul>
+            </div>
+
+            {/* メッセージ一覧表示 */}
+            <div style={{ height: '300px', overflowY: 'scroll' }}>
+                {messages.map((msg) => (
+                    <div key={msg.id}>
+                        {/* ユーザー名があれば表示、なければ user_id */}
+                        <b>{msg.users?.email ?? msg.user_id}</b>: {msg.content}
+                    </div>
+                ))}
+                {/* 一番下のダミー要素：scrollToBottomのターゲット */}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* メッセージ入力欄と送信ボタン */}
+            <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="メッセージを入力"
+            />
+            <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+                送信
+            </button>
         </div>
-      ))}
-      <div ref={messagesEndRef} />
-    </div>
-
-    {/* メッセージ入力 */}
-    <input
-      type="text"
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      placeholder="メッセージを入力"
-    />
-    <button onClick={sendMessage}>送信</button>
-  </div>
-)
+    )
 }
