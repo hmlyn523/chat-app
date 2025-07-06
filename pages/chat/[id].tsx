@@ -31,11 +31,15 @@ export default function ChatRoom() {
     // const scrollToBottom = () => {
     //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     // }
-    const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+    const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>, behavior: ScrollBehavior = 'auto') => {
+        // Safari対策で2回ラフに遅延
         requestAnimationFrame(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior })
+            setTimeout(() => {
+            ref.current?.scrollIntoView({ behavior })
+            }, 100)
         })
     }
+
 
     // チャットルームのメンバー一覧を取得
     const fetchMembers = async () => {
@@ -195,11 +199,14 @@ export default function ChatRoom() {
                         // 自分の投稿ならスクロール
                         if (newMessage.user_id === currentUserId ||
                             newMessage.user_id === currentUserIdRef.current) {
-                            setTimeout(() => scrollToBottom(), 100)
+                            setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                         }
 
                         return updated
                     })
+
+                    // scrollToBottom()
+                    setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                 }
             )
             .subscribe()
