@@ -128,7 +128,7 @@ export default function ChatRoom() {
                     content,
                     user_id,
                     created_at,
-                    users ( email )
+                    users ( email, nickname )
                 `)
             .eq('chat_id', chatId)
             .order('created_at', { ascending: true })
@@ -178,7 +178,10 @@ export default function ChatRoom() {
                     // scrollToBottom():	自分の投稿だったら下まで自動スクロールする
                     const { data: userData, error: userError } = await supabase
                         .from('users')
-                        .select('email')
+                        .select(`
+                            email,
+                            user_profiles ( nickname )
+                        `)
                         .eq('id', newMessage.user_id)
                         .single()
 
@@ -186,13 +189,20 @@ export default function ChatRoom() {
                         console.error('ユーザー情報取得失敗:', userError.message)
                     }
 
+                    const nickname = (userData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
+
                     // setMessages: 受信メッセージ一覧に新しいメッセージを追加
                     setMessages((current) => {
                         const updated = [
                             ...current,
                             {
-                            ...newMessage,
-                            users: userData ? { email: userData.email } : undefined,
+                                ...newMessage,
+                                users: {
+                                    email: userData?.email,
+                                // },
+                                // user_profiles: {
+                                    nickname: nickname ?? null,
+                                },
                             },
                         ]
 
@@ -298,7 +308,7 @@ export default function ChatRoom() {
                 {messages.map((msg) => (
                     <div key={msg.id}>
                         {/* ユーザー名があれば表示、なければ user_id */}
-                        <b>{msg.users?.email ?? msg.user_id}</b>: {msg.content}
+                        <b>{msg.users?.nickname || msg.users?.email || msg.user_id}</b>: {msg.content}
                     </div>
                 ))}
                 {/* 一番下のダミー要素：scrollToBottomのターゲット */}
