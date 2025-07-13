@@ -20,15 +20,64 @@ export default function Home() {
         const loadChats = async () => {
             const userId = user.id
 
-            const { data, error } = await supabase
+            // 1. 自分が属しているチャット一覧を取得
+            const { data: myMemberships, error } = await supabase
             .from('chat_members')
-            .select('chat_id, chats (id, name)')
+            .select('chat_id')
             .eq('user_id', user.id)
 
-            if (error) {
-                console.error('チャットの取得に失敗:', error.message)
+            const chatIds = myMemberships?.map(m => m.chat_id) ?? []
+
+            // 2. そのチャットに属するすべてのメンバー情報を取得（JOIN込み）
+            const { data: members, error: membersError } = await supabase
+            .from('chat_members')
+            .select(`
+                chat_id,
+                user_id,
+                chats ( id, name ),
+                users (
+                id,
+                email,
+                user_profiles (
+                    nickname
+                )
+                )
+            `)
+            .in('chat_id', chatIds)
+
+            if (membersError) {
+            console.error('チャットメンバー取得失敗:', membersError.message)
             } else {
-                setChats(data ?? [])
+            console.log('members:', members)
+
+            const groupedChats: Record<string, any[]> = {}
+            for (const row of members ?? []) {
+                if (!groupedChats[row.chat_id]) groupedChats[row.chat_id] = []
+                groupedChats[row.chat_id].push(row)
+            }
+
+            const displayChats = Object.entries(groupedChats).map(([chatId, members]) => {
+                const chatName = members[0].chats?.name
+
+                const others = members.filter(m => m.user_id !== user.id)
+
+                const nickname = others.length === 1
+                ? others[0]?.users?.user_profiles?.nickname
+                    || others[0]?.users?.email
+                    || '（相手）'
+                : others.map(m =>
+                    m.users?.user_profiles?.nickname
+                    || m.users?.email
+                    || '？'
+                    ).join(', ')
+
+                return {
+                chat_id: chatId,
+                name: chatName ?? nickname ?? '（無名）',
+                }
+            })
+
+            setChats(displayChats)
             }
         }
 
@@ -81,7 +130,7 @@ export default function Home() {
                 }
             }
         )
-        .subscribe();
+        .subscribe()
 
         loadAndWatch()
         loadChats()
@@ -104,11 +153,11 @@ export default function Home() {
                         onClick={() => router.push(`/chat/${c.chat_id}`)}
                         className="w-full text-left p-2 border rounded hover:bg-gray-100 flex justify-between items-center"
                     >
-                        <span>{c.chats?.name ?? '（無名チャット）'}</span>
+                        <span>{c.name}</span>
                         {unreadCounts[c.chat_id] > 0 && (
-                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                             {unreadCounts[c.chat_id]}
-                            </span>
+                        </span>
                         )}
                     </button>
                 </li>

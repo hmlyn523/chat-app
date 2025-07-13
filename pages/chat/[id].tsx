@@ -128,7 +128,12 @@ export default function ChatRoom() {
                     content,
                     user_id,
                     created_at,
-                    users ( email, nickname )
+                    users (
+                        email,
+                        user_profiles (
+                        nickname
+                        )
+                    )
                 `)
             .eq('chat_id', chatId)
             .order('created_at', { ascending: true })
@@ -249,6 +254,42 @@ export default function ChatRoom() {
 
     return (
         <div>
+
+            {/* メンバー追加UI */}
+            <div className="mt-4">
+                <h2 className="font-semibold mb-2">メンバーを追加</h2>
+                <ul className="space-y-2">
+                    {allUsers
+                    .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
+                    .map((user) => (
+                        <li key={user.id} className="flex justify-between items-center">
+                        <span>{user.email}</span>
+                        <button
+                            className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
+                            onClick={async () => {
+                            const { error } = await supabase
+                                .from('chat_members')
+                                .insert([{ chat_id: chatId, user_id: user.id }])
+                            if (!error) {
+                                // UI反映＋is_groupをtrueに
+                                setMembers((prev) => [
+                                ...prev,
+                                { user_id: user.id, users: { email: user.email } },
+                                ])
+                                await supabase
+                                .from('chats')
+                                .update({ is_group: true })
+                                .eq('id', chatId)
+                            }
+                            }}
+                        >
+                            追加
+                        </button>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+
             {/* チャット一覧に戻るボタン */}
             <button
             onClick={() => router.push('/')}
