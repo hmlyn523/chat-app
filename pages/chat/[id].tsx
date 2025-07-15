@@ -131,7 +131,7 @@ export default function ChatRoom() {
                     users (
                         email,
                         user_profiles (
-                        nickname
+                            nickname
                         )
                     )
                 `)
@@ -204,11 +204,12 @@ export default function ChatRoom() {
                                 ...newMessage,
                                 users: {
                                     email: userData?.email,
-                                // },
-                                // user_profiles: {
-                                    nickname: nickname ?? null,
+                                //},
+                                    user_profiles: {
+                                        nickname: nickname ?? null,
+                                    },
                                 },
-                            },
+                            }
                         ]
 
                         // 自分の投稿ならスクロール
@@ -349,8 +350,8 @@ export default function ChatRoom() {
                 {messages.map((msg) => (
                     <div key={msg.id}>
                         {/* ユーザー名があれば表示、なければ user_id */}
-                        <b>{msg.users?.nickname || msg.users?.email || msg.user_id}</b>: {msg.content}
-                    </div>
+                        <b>{msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id}</b>: {msg.content}
+                    </div>  
                 ))}
                 {/* 一番下のダミー要素：scrollToBottomのターゲット */}
                 <div ref={messagesEndRef} />
