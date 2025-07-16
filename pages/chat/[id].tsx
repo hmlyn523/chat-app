@@ -299,9 +299,6 @@ export default function ChatRoom() {
             ← チャット一覧に戻る
             </button>
 
-            {/* チャットID表示（開発・デバッグ用） */}
-            <h1>チャットルーム {chatId}</h1>
-
             {/* 参加メンバー一覧 */}
             <div>
                 <h2>参加メンバー</h2>
