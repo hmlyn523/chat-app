@@ -343,27 +343,56 @@ export default function ChatRoom() {
             </div>
 
             {/* メッセージ一覧表示 */}
-            <div style={{ height: '300px', overflowY: 'scroll' }}>
-                {messages.map((msg) => (
-                    <div key={msg.id}>
-                        {/* ユーザー名があれば表示、なければ user_id */}
-                        <b>{msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id}</b>: {msg.content}
-                    </div>  
-                ))}
-                {/* 一番下のダミー要素：scrollToBottomのターゲット */}
-                <div ref={messagesEndRef} />
-            </div>
+<div className="h-[300px] overflow-y-scroll bg-gray-100 p-4 space-y-2">
+  {messages.map((msg) => {
+    const isMine = msg.user_id === currentUserId
+    const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
 
-            {/* メッセージ入力欄と送信ボタン */}
-            <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="メッセージを入力"
-            />
-            <button onClick={sendMessage} className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
-                送信
-            </button>
+    return (
+      <div
+        key={msg.id}
+        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+      >
+        <div className="max-w-[75%]">
+          {!isMine && (
+            <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
+          )}
+          <div
+            className={`
+              px-4 py-2 text-sm break-words
+              ${isMine
+                ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
+                : 'bg-white text-gray-800 rounded-xl rounded-bl-none shadow'}
+            `}
+          >
+            {msg.content}
+          </div>
+        </div>
+      </div>
+    )
+  })}
+  <div ref={messagesEndRef} />
+</div>
+
+<div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t">
+  <div className="flex items-center gap-2">
+    <input
+      type="text"
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      placeholder="メッセージを入力"
+      className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+    />
+    <button
+      onClick={sendMessage}
+      className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
+    >
+      送信
+    </button>
+  </div>
+</div>
+
+
         </div>
     )
 }
