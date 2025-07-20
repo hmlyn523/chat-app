@@ -98,6 +98,10 @@ export default function ChatRoom() {
         //   これは Next.js の router.query が初期は undefined になることがあるため
         if (!chatId) return
 
+        if (messages.length > 0) {
+            setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+        }
+  
         // 現在のユーザーIDの同期
         //   urrentUserId は React の状態管理なので非同期レンダリングでタイミングがズレる可能性がある
         //   そのため、常に最新の値を useRef で保持し、リアルタイム処理内でも使えるようにしている
@@ -233,7 +237,7 @@ export default function ChatRoom() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [chatId, currentUserId])
+    }, [messages, chatId, currentUserId])
 
     // メッセージ送信
     const sendMessage = async () => {
