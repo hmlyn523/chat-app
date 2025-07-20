@@ -43,7 +43,6 @@ export default function ChatRoom() {
         })
     }
 
-
     // チャットルームのメンバー一覧を取得
     const fetchMembers = async () => {
         const { data, error } = await supabase
@@ -267,10 +266,10 @@ export default function ChatRoom() {
     )
 
     return (
-        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden">
+        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden ">
 
             {/* 上部：メンバー追加など */}
-            <div className="p-4 space-y-4 overflow-y-auto">
+            <div className="p-2 space-y-4 overflow-y-auto">
 
                 {/* メンバー追加UI */}
                 {unjoinedUsers.length > 0 && (
@@ -308,24 +307,10 @@ export default function ChatRoom() {
                         </ul>
                     </div>
                 )}
-
-                {/* 参加メンバー一覧 */}
-                <div>
-                    <div className="flex flex-wrap gap-2">
-                        {members.map((member) => (
-                            <span
-                            key={member.user_id}
-                            className="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm"
-                            >
-                                {member.users?.user_profiles?.nickname ?? member.users?.email ?? member.user_id}
-                            </span>
-                        ))}
-                    </div>
-                </div>
             </div>
 
             {/* メッセージ一覧：スクロール対象 */}
-            <div className="flex-1 overflow-y-auto bg-gray-100 px-4 py-2 space-y-2">
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
                 {messages.map((msg) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
@@ -344,7 +329,7 @@ export default function ChatRoom() {
                             px-4 py-2 text-sm break-words
                             ${isMine
                                 ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
-                                : 'bg-white text-gray-800 rounded-xl rounded-bl-none shadow'}
+                                : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
                             `}
                         >
                             {msg.content}

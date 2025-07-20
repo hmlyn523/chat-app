@@ -46,38 +46,36 @@ export default function Home() {
             .in('chat_id', chatIds)
 
             if (membersError) {
-            console.error('チャットメンバー取得失敗:', membersError.message)
+                console.error('チャットメンバー取得失敗:', membersError.message)
             } else {
-            console.log('members:', members)
-
-            const groupedChats: Record<string, any[]> = {}
-            for (const row of members ?? []) {
-                if (!groupedChats[row.chat_id]) groupedChats[row.chat_id] = []
-                groupedChats[row.chat_id].push(row)
-            }
-
-            const displayChats = Object.entries(groupedChats).map(([chatId, members]) => {
-                const chatName = members[0].chats?.name
-
-                const others = members.filter(m => m.user_id !== user.id)
-
-                const nickname = others.length === 1
-                ? others[0]?.users?.user_profiles?.nickname
-                    || others[0]?.users?.email
-                    || '（相手）'
-                : others.map(m =>
-                    m.users?.user_profiles?.nickname
-                    || m.users?.email
-                    || '？'
-                    ).join(', ')
-
-                return {
-                chat_id: chatId,
-                name: chatName ?? nickname ?? '（無名）',
+                const groupedChats: Record<string, any[]> = {}
+                for (const row of members ?? []) {
+                    if (!groupedChats[row.chat_id]) groupedChats[row.chat_id] = []
+                    groupedChats[row.chat_id].push(row)
                 }
-            })
 
-            setChats(displayChats)
+                const displayChats = Object.entries(groupedChats).map(([chatId, members]) => {
+                    const chatName = members[0].chats?.name
+
+                    const others = members.filter(m => m.user_id !== user.id)
+
+                    const nickname = others.length === 1
+                    ? others[0]?.users?.user_profiles?.nickname
+                        || others[0]?.users?.email
+                        || '（相手）'
+                    : others.map(m =>
+                        m.users?.user_profiles?.nickname
+                        || m.users?.email
+                        || '？'
+                        ).join(', ')
+
+                    return {
+                    chat_id: chatId,
+                    name: chatName ?? nickname ?? '（無名）',
+                    }
+                })
+
+                setChats(displayChats)
             }
         }
 
