@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../../lib/supabaseClient'
 import { useRef } from 'react'
-import { useUser } from '@supabase/auth-helpers-react'
+import dayjs from 'dayjs'
 
 export default function ChatRoom() {
     const router = useRouter()
@@ -317,6 +317,7 @@ export default function ChatRoom() {
                 {messages.map((msg) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
+                    const timeText = dayjs(msg.created_at).format('HH:mm')
 
                     const readByUserIds = msg.message_reads?.map((r: any) => r.user_id) || []
                     const otherMembers = members.filter((m) => m.user_id !== currentUserId)
@@ -344,6 +345,16 @@ export default function ChatRoom() {
                             >
                                 {msg.content}
                             </div>
+                            
+                            {/* 追加: 時間表示 */}
+                            <div
+                            className={`text-[10px] mt-1 ${
+                                isMine ? 'text-right text-gray-500' : 'text-left text-gray-500 ml-2'
+                            }`}
+                            >
+                                {timeText}
+                            </div>
+
                             {/* 👇 既読表示を追加（自分の投稿のみ） */}
                             {isMine && (
                             <div className="text-xs text-right mt-1 text-gray-500">
