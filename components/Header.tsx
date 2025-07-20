@@ -10,7 +10,7 @@ export default function Header() {
   }
 
   return (
-    <header className="p-4 bg-gray-100 flex justify-between">
+    <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow">
       <h1>My Chat App</h1>
       <button onClick={handleLogout} className="text-sm text-blue-500">
         ログアウト

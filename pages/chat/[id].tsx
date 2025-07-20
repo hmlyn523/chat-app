@@ -254,145 +254,149 @@ export default function ChatRoom() {
     }
 
     return (
-        <div>
+        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden">
 
-            {/* メンバー追加UI */}
-            <div className="mt-4">
-                <h2 className="font-semibold mb-2">メンバーを追加</h2>
-                <ul className="space-y-2">
-                    {allUsers
-                    .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
-                    .map((user) => (
-                        <li key={user.id} className="flex justify-between items-center">
-                        <span>{user.email}</span>
-                        <button
-                            className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
-                            onClick={async () => {
-                            const { error } = await supabase
-                                .from('chat_members')
-                                .insert([{ chat_id: chatId, user_id: user.id }])
-                            if (!error) {
-                                // UI反映＋is_groupをtrueに
-                                setMembers((prev) => [
-                                ...prev,
-                                { user_id: user.id, users: { email: user.email } },
-                                ])
-                                await supabase
-                                .from('chats')
-                                .update({ is_group: true })
-                                .eq('id', chatId)
-                            }
-                            }}
-                        >
-                            追加
-                        </button>
-                        </li>
-                    ))}
-                </ul>
+            {/* 上部：メンバー追加など */}
+            <div className="p-4 space-y-4 overflow-y-auto">
+
+                {/* チャット一覧に戻るボタン */}
+                <button
+                onClick={() => router.push('/')}
+                className="p-2 mb-4 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                ← チャット一覧に戻る
+                </button>
+
+                {/* メンバー追加UI */}
+                <div className="mt-4">
+                    <h2 className="font-semibold mb-2">メンバーを追加</h2>
+                    <ul className="space-y-2">
+                        {allUsers
+                        .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
+                        .map((user) => (
+                            <li key={user.id} className="flex justify-between items-center">
+                            <span>{user.email}</span>
+                            <button
+                                className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
+                                onClick={async () => {
+                                const { error } = await supabase
+                                    .from('chat_members')
+                                    .insert([{ chat_id: chatId, user_id: user.id }])
+                                if (!error) {
+                                    // UI反映＋is_groupをtrueに
+                                    setMembers((prev) => [
+                                    ...prev,
+                                    { user_id: user.id, users: { email: user.email } },
+                                    ])
+                                    await supabase
+                                    .from('chats')
+                                    .update({ is_group: true })
+                                    .eq('id', chatId)
+                                }
+                                }}
+                            >
+                                追加
+                            </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* 参加メンバー一覧 */}
+                <div>
+                    <h2>参加メンバー</h2>
+                    <ul>
+                        {members.map((m) => (
+                            <li key={m.user_id}>
+                                {/* メールアドレスを表示（なければUUID） */}
+                                {m.users?.email}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
+                {/* 招待可能なユーザー一覧（まだ参加していない人） */}
+                <div>
+                    <h2>招待できるユーザー</h2>
+                    <ul>
+                        {allUsers
+                        .filter((u) => !members.find((m) => m.user_id === u.id))
+                        .map((user) => (
+                            <li key={user.id}>
+                            {user.email}
+                            <button
+                                onClick={async () => {
+                                const { error } = await supabase
+                                    .from('chat_members')
+                                    .insert([{ chat_id: chatId, user_id: user.id }])
+                                if (!error) {
+                                    // UIにも反映させる
+                                    setMembers((prev) => [
+                                        ...prev,
+                                        { user_id: user.id, users: { email: user.email } },
+                                    ])
+                                }
+                                }}
+                            >
+                                招待
+                            </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+
             </div>
 
-            {/* チャット一覧に戻るボタン */}
-            <button
-            onClick={() => router.push('/')}
-            className="p-2 mb-4 bg-gray-200 rounded hover:bg-gray-300"
-            >
-            ← チャット一覧に戻る
-            </button>
+            {/* メッセージ一覧：スクロール対象 */}
+            <div className="flex-1 overflow-y-auto bg-gray-100 px-4 py-2 space-y-2">
+                {messages.map((msg) => {
+                    const isMine = msg.user_id === currentUserId
+                    const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
 
-            {/* 参加メンバー一覧 */}
-            <div>
-                <h2>参加メンバー</h2>
-                <ul>
-                    {members.map((m) => (
-                        <li key={m.user_id}>
-                            {/* メールアドレスを表示（なければUUID） */}
-                            {m.users?.email}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {/* 招待可能なユーザー一覧（まだ参加していない人） */}
-            <div>
-            <h2>招待できるユーザー</h2>
-            <ul>
-                {allUsers
-                .filter((u) => !members.find((m) => m.user_id === u.id))
-                .map((user) => (
-                    <li key={user.id}>
-                    {user.email}
-                    <button
-                        onClick={async () => {
-                        const { error } = await supabase
-                            .from('chat_members')
-                            .insert([{ chat_id: chatId, user_id: user.id }])
-                        if (!error) {
-                            // UIにも反映させる
-                            setMembers((prev) => [
-                                ...prev,
-                                { user_id: user.id, users: { email: user.email } },
-                            ])
-                        }
-                        }}
+                    return (
+                    <div
+                        key={msg.id}
+                        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
                     >
-                        招待
-                    </button>
-                    </li>
-                ))}
-            </ul>
+                        <div className="max-w-[75%]">
+                        {!isMine && (
+                            <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
+                        )}
+                        <div
+                            className={`
+                            px-4 py-2 text-sm break-words
+                            ${isMine
+                                ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
+                                : 'bg-white text-gray-800 rounded-xl rounded-bl-none shadow'}
+                            `}
+                        >
+                            {msg.content}
+                        </div>
+                        </div>
+                    </div>
+                    )
+                })}
+                <div ref={messagesEndRef} />
             </div>
 
-            {/* メッセージ一覧表示 */}
-<div className="h-[300px] overflow-y-scroll bg-gray-100 p-4 space-y-2">
-  {messages.map((msg) => {
-    const isMine = msg.user_id === currentUserId
-    const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
-
-    return (
-      <div
-        key={msg.id}
-        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-      >
-        <div className="max-w-[75%]">
-          {!isMine && (
-            <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
-          )}
-          <div
-            className={`
-              px-4 py-2 text-sm break-words
-              ${isMine
-                ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
-                : 'bg-white text-gray-800 rounded-xl rounded-bl-none shadow'}
-            `}
-          >
-            {msg.content}
-          </div>
-        </div>
-      </div>
-    )
-  })}
-  <div ref={messagesEndRef} />
-</div>
-
-<div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t">
-  <div className="flex items-center gap-2">
-    <input
-      type="text"
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      placeholder="メッセージを入力"
-      className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
-    />
-    <button
-      onClick={sendMessage}
-      className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
-    >
-      送信
-    </button>
-  </div>
-</div>
-
-
+            {/* 固定フッター(入力欄 + 送信ボタン) */}
+            <div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t z-10">
+                <div className="flex items-center gap-2">
+                    <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="メッセージを入力"
+                    className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+                    />
+                    <button
+                    onClick={sendMessage}
+                    className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
+                    >
+                        送信
+                    </button>
+                </div>
+            </div>
         </div>
     )
 }
