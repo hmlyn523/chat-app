@@ -3,6 +3,13 @@ import { useRouter } from 'next/router'
 import { supabase } from '../../lib/supabaseClient'
 import { useRef } from 'react'
 import dayjs from 'dayjs'
+import weekday from 'dayjs/plugin/weekday'
+import localeData from 'dayjs/plugin/localeData'
+import 'dayjs/locale/ja'
+
+dayjs.extend(weekday)
+dayjs.extend(localeData)
+dayjs.locale('ja')
 
 export default function ChatRoom() {
     const router = useRouter()
@@ -314,7 +321,7 @@ export default function ChatRoom() {
 
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-                {messages.map((msg) => {
+                {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
                     const timeText = dayjs(msg.created_at).format('HH:mm')
@@ -325,46 +332,62 @@ export default function ChatRoom() {
                         otherMembers.some((m) => m.user_id === id)
                     ).length
                     const totalOtherMembers = otherMembers.length
-                    
-                    return (
-                    <div
-                        key={msg.id}
-                        className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div className="max-w-[75%]">
-                            {!isMine && (
-                                <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
-                            )}
-                            <div
-                                className={`
-                                px-4 py-2 text-sm break-words
-                                ${isMine
-                                    ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
-                                    : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
-                                `}
-                            >
-                                {msg.content}
-                            </div>
-                            
-                            {/* 追加: 時間表示 */}
-                            <div
-                            className={`text-[10px] mt-1 ${
-                                isMine ? 'text-right text-gray-500' : 'text-left text-gray-500 ml-2'
-                            }`}
-                            >
-                                {timeText}
-                            </div>
 
-                            {/* 👇 既読表示を追加（自分の投稿のみ） */}
-                            {isMine && (
-                            <div className="text-xs text-right mt-1 text-gray-500">
-                                {readCount === totalOtherMembers
-                                ? '既読'
-                                : `既読 ${readCount} / ${totalOtherMembers}`}
+                        const currentDate = dayjs(msg.created_at).format('YYYY-MM-DD')
+
+                        const prev = index > 0 ? messages[index - 1] : null
+                        const prevDate = prev ? dayjs(prev.created_at).format('YYYY-MM-DD') : null
+                        const showDate = currentDate !== prevDate
+                        const showTime =
+                            !prev || dayjs(msg.created_at).format('YYYY-MM-DD HH:mm') !== dayjs(prev.created_at).format('YYYY-MM-DD HH:mm')
+
+                    return (
+                        <div key={msg.id}>
+                            {/* ✅ 日付が変わったら中央に年月日（曜日）を表示 */}
+                            {showDate && (
+                                <div className="text-center text-xs text-gray-500 my-4">
+                                    {dayjs(msg.created_at).format('YYYY年M月D日（ddd）')}
+                                </div>
+                            )}                        
+                            <div
+                                key={msg.id}
+                                className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div className="max-w-[75%]">
+                                    {!isMine && (
+                                        <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
+                                    )}
+                                    <div
+                                        className={`
+                                        px-4 py-2 text-sm break-words
+                                        ${isMine
+                                            ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
+                                            : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
+                                        `}
+                                    >
+                                        {msg.content}
+                                    </div>
+                                    
+                                    {/* 追加: 時間表示 */}
+                                    <div
+                                    className={`text-[10px] mt-1 ${
+                                        isMine ? 'text-right text-gray-500' : 'text-left text-gray-500 ml-2'
+                                    }`}
+                                    >
+                                        {timeText}
+                                    </div>
+
+                                    {/* 👇 既読表示を追加（自分の投稿のみ） */}
+                                    {isMine && (
+                                    <div className="text-xs text-right mt-1 text-gray-500">
+                                        {readCount === totalOtherMembers
+                                        ? '既読'
+                                        : `既読 ${readCount} / ${totalOtherMembers}`}
+                                    </div>
+                                    )}
+                                </div>
                             </div>
-                            )}
                         </div>
-                    </div>
                     )
                 })}
                 <div ref={messagesEndRef} />
