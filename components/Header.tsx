@@ -5,7 +5,7 @@ export default function Header() {
   const router = useRouter()
   const pathname = usePathname()
 
-  const isChatRoom = pathname.startsWith('/chat/')
+  const isChatRoom = typeof pathname === 'string' && pathname.startsWith('/chat/')
   
   const handleLogout = async () => {
     await supabase.auth.signOut()
