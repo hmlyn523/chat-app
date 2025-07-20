@@ -45,7 +45,7 @@ export default function ChatRoom() {
     const fetchMembers = async () => {
         const { data, error } = await supabase
             .from('chat_members')
-            .select('user_id, users(email)')
+            .select('user_id, users(email, user_profiles(nickname))')
             .eq('chat_id', chatId)
 
         if (error) {
@@ -302,15 +302,16 @@ export default function ChatRoom() {
 
                 {/* 参加メンバー一覧 */}
                 <div>
-                    <h2>参加メンバー</h2>
-                    <ul>
-                        {members.map((m) => (
-                            <li key={m.user_id}>
-                                {/* メールアドレスを表示（なければUUID） */}
-                                {m.users?.email}
-                            </li>
+                    <div className="flex flex-wrap gap-2">
+                        {members.map((member) => (
+                            <span
+                            key={member.user_id}
+                            className="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm"
+                            >
+                                {member.users?.user_profiles?.nickname ?? member.users?.email ?? member.user_id}
+                            </span>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             </div>
 
