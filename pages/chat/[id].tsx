@@ -99,16 +99,14 @@ export default function ChatRoom() {
         // チャットIDチェック
         //   URLから取得した chatId がまだ undefined のときは処理を止める
         //   これは Next.js の router.query が初期は undefined になることがあるため
-  if (!chatId) return
-//   if (!chatId || !messages || messages.length === 0) return
+        if (!chatId) return
 
-  if (!didInitialScrollRef.current) {
-    setTimeout(() => {
-      safeScrollToBottom(messagesEndRef, 'auto')
-    }, 100)
-
-    didInitialScrollRef.current = true
-  }
+        if (messages.length > 0 && !didInitialScrollRef.current) {
+            setTimeout(() => {
+                safeScrollToBottom(messagesEndRef, 'auto')
+                didInitialScrollRef.current = true
+            }, 100)
+        }
   
         // 現在のユーザーIDの同期
         //   urrentUserId は React の状態管理なので非同期レンダリングでタイミングがズレる可能性がある
@@ -167,10 +165,8 @@ export default function ChatRoom() {
         }
 
         fetchMessagesAndMarkRead()
-        //  fetchMessages()
         fetchMembers()
         fetchUsers()
-        // scrollToBottom()
 
         // リアルタイム購読
         const channel = supabase
@@ -238,7 +234,7 @@ export default function ChatRoom() {
                 }
             )
             .subscribe()
-// didInitialScrollRef.current = false
+
         // 購読解除
         // コンポーネントがアンマウントされた時（例：チャットを抜けたとき）に、リアルタイム購読を解除
         // これにより、メモリリークや不要なリアルタイム更新を防ぐ
