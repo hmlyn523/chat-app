@@ -253,6 +253,10 @@ export default function ChatRoom() {
         }
     }
 
+    const unjoinedUsers = allUsers.filter(
+        (u) => !members.find((m) => m.user_id === u.id)
+    )
+
     return (
         <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden">
 
@@ -260,39 +264,41 @@ export default function ChatRoom() {
             <div className="p-4 space-y-4 overflow-y-auto">
 
                 {/* メンバー追加UI */}
-                <div className="mt-4">
-                    <h2 className="font-semibold mb-2">メンバーを追加</h2>
-                    <ul className="space-y-2">
-                        {allUsers
-                        .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
-                        .map((user) => (
-                            <li key={user.id} className="flex justify-between items-center">
-                            <span>{user.email}</span>
-                            <button
-                                className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
-                                onClick={async () => {
-                                const { error } = await supabase
-                                    .from('chat_members')
-                                    .insert([{ chat_id: chatId, user_id: user.id }])
-                                if (!error) {
-                                    // UI反映＋is_groupをtrueに
-                                    setMembers((prev) => [
-                                    ...prev,
-                                    { user_id: user.id, users: { email: user.email } },
-                                    ])
-                                    await supabase
-                                    .from('chats')
-                                    .update({ is_group: true })
-                                    .eq('id', chatId)
-                                }
-                                }}
-                            >
-                                追加
-                            </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                {unjoinedUsers.length > 0 && (
+                    <div>
+                        <h2 className="font-semibold mb-2">メンバー追加</h2>
+                        <ul className="space-y-2">
+                            {allUsers
+                            .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
+                            .map((user) => (
+                                <li key={user.id} className="flex justify-between items-center">
+                                <span>{user.email}</span>
+                                <button
+                                    className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
+                                    onClick={async () => {
+                                    const { error } = await supabase
+                                        .from('chat_members')
+                                        .insert([{ chat_id: chatId, user_id: user.id }])
+                                    if (!error) {
+                                        // UI反映＋is_groupをtrueに
+                                        setMembers((prev) => [
+                                        ...prev,
+                                        { user_id: user.id, users: { email: user.email } },
+                                        ])
+                                        await supabase
+                                        .from('chats')
+                                        .update({ is_group: true })
+                                        .eq('id', chatId)
+                                    }
+                                    }}
+                                >
+                                    追加
+                                </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 {/* 参加メンバー一覧 */}
                 <div>
@@ -306,37 +312,6 @@ export default function ChatRoom() {
                         ))}
                     </ul>
                 </div>
-
-                {/* 招待可能なユーザー一覧（まだ参加していない人） */}
-                <div>
-                    <h2>招待できるユーザー</h2>
-                    <ul>
-                        {allUsers
-                        .filter((u) => !members.find((m) => m.user_id === u.id))
-                        .map((user) => (
-                            <li key={user.id}>
-                            {user.email}
-                            <button
-                                onClick={async () => {
-                                const { error } = await supabase
-                                    .from('chat_members')
-                                    .insert([{ chat_id: chatId, user_id: user.id }])
-                                if (!error) {
-                                    // UIにも反映させる
-                                    setMembers((prev) => [
-                                        ...prev,
-                                        { user_id: user.id, users: { email: user.email } },
-                                    ])
-                                }
-                                }}
-                            >
-                                招待
-                            </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
             </div>
 
             {/* メッセージ一覧：スクロール対象 */}
