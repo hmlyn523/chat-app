@@ -19,7 +19,7 @@ type ChatMemberData = {
 }
 
 
-export default function Header() {
+export default function ChatHeader() {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -73,7 +73,7 @@ export default function Header() {
 
   // 表示するタイトルを構築
   const displayTitle = (() => {
-    if (!chatId || members.length === 0) return 'My Chat App'
+    if (!chatId || members.length === 0) return ''
     const otherMembers = members.filter((m) => m.id !== currentUserId)
     const isGroup = members.length > 2
 
@@ -104,13 +104,6 @@ export default function Header() {
         )}
         <h1 className="font-bold text-lg truncate">{displayTitle}</h1>
       </div>
-
-      <button
-        onClick={handleLogout}
-        className="text-sm text-blue-500"
-      >
-        ログアウト
-      </button>
     </header>
   )
 }

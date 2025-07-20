@@ -6,20 +6,27 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react'
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs'
 import { Session } from '@supabase/auth-helpers-nextjs'
 import '../styles/globals.css'
-import Header from '../components/Header'
+import ChatHeader from '../components/ChatHeader'
+import ListHeader from '../components/ListHeader'
+import { usePathname } from 'next/navigation';
 
 export default function App({
     Component,
     pageProps,
 }: AppProps<{ initialSession: Session }>) {
     const [supabaseClient] = useState(() => createPagesBrowserClient())
+    const pathname = usePathname()
+    const isChatRoom = pathname?.startsWith('/chat/')
 
     return (
     <SessionContextProvider
         supabaseClient={supabaseClient}
         initialSession={pageProps.initialSession}
     >
-        <Header />
+      {isChatRoom
+        ? <ChatHeader />     // チャット画面専用ヘッダー
+        : <ListHeader />     // チャット一覧・それ以外の画面用ヘッダー
+      }
         <Component {...pageProps} />
     </SessionContextProvider>
     )
