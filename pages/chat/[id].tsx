@@ -259,14 +259,6 @@ export default function ChatRoom() {
             {/* 上部：メンバー追加など */}
             <div className="p-4 space-y-4 overflow-y-auto">
 
-                {/* チャット一覧に戻るボタン */}
-                <button
-                onClick={() => router.push('/')}
-                className="p-2 mb-4 bg-gray-200 rounded hover:bg-gray-300"
-                >
-                ← チャット一覧に戻る
-                </button>
-
                 {/* メンバー追加UI */}
                 <div className="mt-4">
                     <h2 className="font-semibold mb-2">メンバーを追加</h2>
