@@ -142,6 +142,9 @@ export default function ChatRoom() {
                         user_profiles (
                             nickname
                         )
+                    ),
+                    message_reads (
+                        user_id
                     )
                 `)
             .eq('chat_id', chatId)
@@ -315,25 +318,40 @@ export default function ChatRoom() {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
 
+                    const readByUserIds = msg.message_reads?.map((r: any) => r.user_id) || []
+                    const otherMembers = members.filter((m) => m.user_id !== currentUserId)
+                    const readCount = readByUserIds.filter((id: any) =>
+                        otherMembers.some((m) => m.user_id === id)
+                    ).length
+                    const totalOtherMembers = otherMembers.length
+                    
                     return (
                     <div
                         key={msg.id}
                         className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
                     >
                         <div className="max-w-[75%]">
-                        {!isMine && (
-                            <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
-                        )}
-                        <div
-                            className={`
-                            px-4 py-2 text-sm break-words
-                            ${isMine
-                                ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
-                                : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
-                            `}
-                        >
-                            {msg.content}
-                        </div>
+                            {!isMine && (
+                                <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>
+                            )}
+                            <div
+                                className={`
+                                px-4 py-2 text-sm break-words
+                                ${isMine
+                                    ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
+                                    : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
+                                `}
+                            >
+                                {msg.content}
+                            </div>
+                            {/* 👇 既読表示を追加（自分の投稿のみ） */}
+                            {isMine && (
+                            <div className="text-xs text-right mt-1 text-gray-500">
+                                {readCount === totalOtherMembers
+                                ? '既読'
+                                : `既読 ${readCount} / ${totalOtherMembers}`}
+                            </div>
+                            )}
                         </div>
                     </div>
                     )
