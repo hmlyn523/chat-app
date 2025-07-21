@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { useSession, useUser } from '@supabase/auth-helpers-react'
 import { supabase } from '../lib/supabaseClient'
+import Link from 'next/link';
 
 export default function Home() {
     const session = useSession()
@@ -141,35 +142,44 @@ export default function Home() {
     }, [session, user])
 
     return (
-    <div className="max-w-md mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">チャット一覧</h1>
+        <div className="max-w-md mx-auto p-4">
+            <h1 className="text-2xl font-bold mb-4">チャット一覧</h1>
 
-        <ul className="space-y-2">
-            {chats.map((c) => (
-                <li key={c.chat_id}>
-                    <button
-                        onClick={() => router.push(`/chat/${c.chat_id}`)}
-                        className="w-full text-left p-2 border rounded hover:bg-gray-100 flex justify-between items-center"
-                    >
-                        <span>{c.name}</span>
-                        {unreadCounts[c.chat_id] > 0 && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                            {unreadCounts[c.chat_id]}
-                        </span>
-                        )}
-                    </button>
-                </li>
-            ))}
-        </ul>
+            <ul className="space-y-2">
+                {chats.map((c) => (
+                    <li key={c.chat_id}>
+                        <button
+                            onClick={() => router.push(`/chat/${c.chat_id}`)}
+                            className="w-full text-left p-2 border rounded hover:bg-gray-100 flex justify-between items-center"
+                        >
+                            <span>{c.name}</span>
+                            {unreadCounts[c.chat_id] > 0 && (
+                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                {unreadCounts[c.chat_id]}
+                            </span>
+                            )}
+                        </button>
+                    </li>
+                ))}
+            </ul>
 
-        <div className="mt-6">
-        <button
-            className="btn btn-primary w-full"
-            onClick={() => router.push('/new-chat')}
-        >
-            新しいチャットを作成
-        </button>
+            <div className="mt-6">
+                <button
+                    className="btn mt-3 btn-primary w-full"
+                    onClick={() => router.push('/new-chat')}
+                >
+                    新しいチャットを作成
+                </button>
+                <Link href="/friends/add" className="btn mt-3 btn-secondary w-full block text-center">
+                    友だち追加
+                </Link>
+                <Link href="/friends" className="btn mt-3 btn-secondary w-full block text-center">
+                    友だち一覧
+                </Link>
+                <Link href="/friend_requests" className="btn mt-3 btn-secondary w-full block text-center">
+                    友だち申請一覧
+                </Link>
+            </div>
         </div>
-    </div>
     )
 }

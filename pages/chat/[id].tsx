@@ -274,6 +274,9 @@ export default function ChatRoom() {
     const unjoinedUsers = allUsers.filter(
         (u) => !members.find((m) => m.user_id === u.id)
     )
+    // const myFriends = allUsers.filter(
+    //     (u) => acceptedFriendIds.includes(u.id)
+    // )
 
     return (
         <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden ">
