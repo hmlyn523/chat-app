@@ -141,6 +141,10 @@ export default function Home() {
         };
     }, [session, user])
 
+    if (session === null) {
+        return <p>リダイレクト中...</p>
+    }
+
     return (
         <div className="max-w-md mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">チャット一覧</h1>
