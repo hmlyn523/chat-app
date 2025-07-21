@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient'
 
 export async function sendFriendRequest(senderId: string, receiverId: string) {
-  const { error } = await supabase
+  const { error, data } = await supabase
     .from('friend_requests')
     .insert([{ sender_id: senderId, receiver_id: receiverId, status: 'pending' }])
   return { error }
