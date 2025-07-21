@@ -13,7 +13,7 @@ export default function Home() {
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
 
     useEffect(() => {
-        if (!session || !user) {
+        if (session === null || user === null || !session || !user) {
             router.push('/auth')
             return
         }
