@@ -11,14 +11,42 @@ export default function NewChat() {
   const router = useRouter()
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data } = await supabase.from('users').select('id, email')
-      if (data) {
-        // 自分以外を表示
-        setUsers(data.filter((u) => u.id !== user?.id))
+    // const fetchUsers = async () => {
+    //   const { data } = await supabase.from('users').select('id, email')
+    //   if (data) {
+    //     // 自分以外を表示
+    //     setUsers(data.filter((u) => u.id !== user?.id))
+    //   }
+    // }
+    // fetchUsers()
+    const fetchApprovedFriends = async () => {
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('friends')
+        .select(`
+          user_id,
+          friend_id,
+          status,
+          users:friend_id ( id, email )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+
+      if (error) {
+        console.error('フレンド取得エラー', error)
+        return
       }
+
+      // フレンド情報が users にネストされてる
+      const approvedFriends = data
+        .map((f) => f.users?.[0]) // { id, email }
+        .filter((u) => u?.id) // 念のためnull除外
+
+      setUsers(approvedFriends)
     }
-    fetchUsers()
+
+    fetchApprovedFriends()
   }, [user])
 
   const toggleUser = (id: string) => {
