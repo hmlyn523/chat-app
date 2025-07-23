@@ -7,29 +7,35 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
   const [sentRequests, setSentRequests] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    // ユーザー一覧取得
-    supabase
-      .from('users')
-      .select('id, email')
-      .then(({ data }) => {
-        const filtered = data?.filter((u) => u.id !== currentUserId) || []
-        setUsers(filtered)
-      })
+    const fetchData = async () => {
+      // ユーザー一覧取得
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, email')
 
-    // 自分が送った friend_requests を取得
-    supabase
-      .from('friend_requests')
-      .select('receiver_id, status')
-      .eq('sender_id', currentUserId)
-      .then(({ data }) => {
-        if (data) {
-          const map: Record<string, string> = {}
-          data.forEach((req) => {
-            map[req.receiver_id] = req.status
-          })
-          setSentRequests(map)
-        }
-      })
+      const filteredUsers = usersData?.filter((u) => u.id !== currentUserId) || []
+      setUsers(filteredUsers)
+
+      // 自分が関係している全 friend_requests を取得（sender または receiver）
+      const { data: requestsData } = await supabase
+        .from('friend_requests')
+        .select('sender_id, receiver_id, status')
+        .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
+
+      if (requestsData) {
+        const map: Record<string, string> = {}
+
+        requestsData.forEach((req) => {
+          const otherUserId =
+            req.sender_id === currentUserId ? req.receiver_id : req.sender_id
+          map[otherUserId] = req.status
+        })
+
+        setSentRequests(map)
+      }
+    }
+
+    fetchData()
   }, [currentUserId])
 
   const handleRequest = async (userId: string) => {
