@@ -23,10 +23,10 @@ export default function ListHeader() {
         {/* 戻るボタン */}
         {showBackButton && (
           <button onClick={handleBack} className="text-sm text-gray-600 mr-2">
-            &lt;
+            ≪
           </button>
         )}
-        <h1 className="font-bold text-lg truncate">🦄 My Chat App 🦄</h1>
+        <h1 className="font-bold text-lg truncate">ヒトコト</h1>
       </div>
 
       <button
