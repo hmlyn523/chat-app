@@ -9,18 +9,32 @@ import { useSession } from '@supabase/auth-helpers-react'
 
 export default function AddFriendPage() {
   const session = useSession()
-  const currentUserId = session?.user.id
   const [users, setUsers] = useState<any[]>([])
 
   useEffect(() => {
-    if (!currentUserId) return
-    fetchOtherUsers(currentUserId).then(setUsers)
-  }, [currentUserId])
+    if (!session?.user?.id) return
+
+    fetchOtherUsers(session.user.id)
+      .then(setUsers)
+      .catch((error) => {
+        console.error('ユーザー取得失敗:', error)
+        alert('ユーザーの取得に失敗しました。')
+      })
+  }, [session?.user?.id])
 
   const handleRequest = async (receiverId: string) => {
-    if (!currentUserId) return
-    await requestFriend(currentUserId, receiverId)
-    alert('申請を送りました！')
+    if (!session?.user?.id) return
+    try {
+      await requestFriend(session.user.id, receiverId)
+      alert('申請を送りました！')
+    } catch (error) {
+      console.error('申請エラー:', error)
+      alert('申請に失敗しました。')
+    }
+  }
+
+  if (!session?.user) {
+    return <p>ログイン情報がありません。ログインしてください。</p>
   }
 
   return (

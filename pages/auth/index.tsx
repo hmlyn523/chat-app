@@ -1,6 +1,6 @@
 import { useSession } from '@supabase/auth-helpers-react'
 import { useRouter } from 'next/router'
-import { AuthForm } from '../components/AuthForm'
+import { AuthForm } from '../../components/AuthForm'
 
 export default function AuthPage() {
   const session = useSession()
