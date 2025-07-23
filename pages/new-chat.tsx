@@ -11,39 +11,43 @@ export default function NewChat() {
   const router = useRouter()
 
   useEffect(() => {
-    // const fetchUsers = async () => {
-    //   const { data } = await supabase.from('users').select('id, email')
-    //   if (data) {
-    //     // 自分以外を表示
-    //     setUsers(data.filter((u) => u.id !== user?.id))
-    //   }
-    // }
-    // fetchUsers()
     const fetchApprovedFriends = async () => {
       if (!user) return
 
-      const { data, error } = await supabase
-        .from('friends')
-        .select(`
-          user_id,
-          friend_id,
-          status,
-          users:friend_id ( id, email )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'approved')
+      // フレンド申請のうち、承認済みのものだけ取得
+      const { data: requests, error } = await supabase
+        .from('friend_requests')
+        .select('sender_id, receiver_id')
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq('status', 'accepted')
 
       if (error) {
         console.error('フレンド取得エラー', error)
         return
       }
 
-      // フレンド情報が users にネストされてる
-      const approvedFriends = data
-        .map((f) => f.users?.[0]) // { id, email }
-        .filter((u) => u?.id) // 念のためnull除外
+      // 自分ではない方（相手ユーザーID）だけを抽出
+      const friendIds = requests.map((r) =>
+        r.sender_id === user.id ? r.receiver_id : r.sender_id
+      )
 
-      setUsers(approvedFriends)
+      if (friendIds.length === 0) {
+        setUsers([]) // 該当なし
+        return
+      }
+
+      // 相手ユーザーの情報を users テーブルから取得
+      const { data: friendUsers, error: usersError } = await supabase
+        .from('users')
+        .select('id, email')
+        .in('id', friendIds)
+
+      if (usersError) {
+        console.error('ユーザー情報取得エラー', usersError)
+        return
+      }
+
+      setUsers(friendUsers ?? [])
     }
 
     fetchApprovedFriends()
