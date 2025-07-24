@@ -108,9 +108,9 @@ export default function NewChat() {
         />
       )}
 
-      <div className="mb-6">
-        <p className="font-semibold mb-2">メンバーを選択：</p>
-        <ul className="space-y-2">
+      <div className="mb-6 flex flex-col items-center">
+        <p className="font-semibold mb-2 w-full text-left">メンバーを選択：</p>
+        <ul className="space-y-2 w-full max-w-xs">
           {users.map((u) => {
             const isChecked = selectedUserIds.includes(u.id)
             const nickname = u.user_profiles?.nickname || u.email
@@ -136,12 +136,14 @@ export default function NewChat() {
         </ul>
       </div>
 
-      <button
-        onClick={createChat}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-      >
-        作成する
-      </button>
+      <div className="flex justify-center">
+        <button
+          onClick={createChat}
+          className="w-5/6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+        >
+          作成する
+        </button>
+      </div>
     </div>
   )
 }

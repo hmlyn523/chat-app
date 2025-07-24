@@ -169,16 +169,16 @@ export default function Home() {
         ))}
       </ul>
 
-      <div className="space-y-3 pt-6">
+      <div className="space-y-3 pt-6 flex flex-col items-center">
         <button
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
+          className="w-5/6 bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
           onClick={() => router.push('/new-chat')}
         >
           ➕ チャット作成
         </button>
         <Link
           href="/friends"
-          className="block text-center w-full border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+          className="block text-center w-5/6 border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
         >
           👥 友だち
         </Link>

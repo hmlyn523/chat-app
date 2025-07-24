@@ -98,8 +98,8 @@ export default function ChatHeader() {
     <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center">
       <div className="flex items-center gap-2">
         {isChatRoom && (
-          <button onClick={() => router.push('/')} className="text-blue-500 text-lg font-bold">
-            &lt;
+          <button onClick={() => router.push('/')} className="text-xl mr-2 font-bold">
+            ＜
           </button>
         )}
         <h1 className="font-bold text-lg truncate">{displayTitle}</h1>

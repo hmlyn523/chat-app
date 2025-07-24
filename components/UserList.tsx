@@ -57,18 +57,25 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
           return (
             <li
               key={u.id}
-              className="flex items-center justify-between border p-3 rounded shadow-sm bg-white"
+              className={`flex items-center justify-between border p-3 rounded shadow-sm max-w-xs mx-auto
+              ${
+                status === 'accepted'
+                  ? 'bg-green-100'
+                  : status === 'pending'
+                  ? 'bg-yellow-50'
+                  : 'bg-white'
+              }`}
             >
-              <span className="text-sm">{name}</span>
+              <span className="text-sm truncate">{name}</span>
               {status === 'pending' && (
-                <span className="text-xs text-gray-500">申請中</span>
+                <span className="text-xs text-gray-500 ml-2">申請中</span>
               )}
               {status === 'accepted' && (
-                <span className="text-xs text-green-600">友だち</span>
+                <span className="text-xs text-green-600 ml-2">友だち</span>
               )}
               {status === 'rejected' && (
                 <button
-                  className="text-xs bg-red-500 text-white px-3 py-1 rounded"
+                  className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
                   再申請
@@ -76,7 +83,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               )}
               {!status && (
                 <button
-                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded"
+                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
                   申請

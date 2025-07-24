@@ -20,13 +20,17 @@ export default function ListHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center">
       <div className="flex items-center gap-2">
-        {/* 戻るボタン */}
-        {showBackButton && (
-          <button onClick={handleBack} className="text-sm text-gray-600 mr-2">
-            ≪
-          </button>
-        )}
-        <h1 className="font-bold text-lg truncate">ヒトコト</h1>
+        <button
+          onClick={showBackButton ? handleBack : undefined}
+          className={`text-2xl font-bold mr-2 leading-none flex items-center justify-center ${
+            showBackButton ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          tabIndex={showBackButton ? 0 : -1}
+          aria-hidden={showBackButton ? 'false' : 'true'}
+        >
+          ≪
+        </button>
+        <h1 className="text-2xl font-bold leading-none align-middle">ヒトコト</h1>
       </div>
 
       <button
