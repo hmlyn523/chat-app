@@ -146,44 +146,43 @@ export default function Home() {
     }
 
     return (
-        <div className="max-w-md mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">チャット一覧</h1>
+    <div className="max-w-md mx-auto p-20 space-y-6">
+      <header className="text-center">
+        <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
+      </header>
 
-            <ul className="space-y-2">
-                {chats.map((c) => (
-                    <li key={c.chat_id}>
-                        <button
-                            onClick={() => router.push(`/chat/${c.chat_id}`)}
-                            className="w-full text-left p-2 border rounded hover:bg-gray-100 flex justify-between items-center"
-                        >
-                            <span>{c.name}</span>
-                            {unreadCounts[c.chat_id] > 0 && (
-                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                {unreadCounts[c.chat_id]}
-                            </span>
-                            )}
-                        </button>
-                    </li>
-                ))}
-            </ul>
+      <ul className="space-y-3">
+        {chats.map((c) => (
+          <li key={c.chat_id}>
+            <button
+              onClick={() => router.push(`/chat/${c.chat_id}`)}
+              className="w-full text-left p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition flex justify-between items-center"
+            >
+              <span className="font-medium text-gray-800 truncate">{c.name}</span>
+              {unreadCounts[c.chat_id] > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  {unreadCounts[c.chat_id]}
+                </span>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
 
-            <div className="mt-6">
-                <button
-                    className="btn mt-3 btn-primary w-full"
-                    onClick={() => router.push('/new-chat')}
-                >
-                    新しいチャットを作成
-                </button>
-                <Link href="/friends/add" className="btn mt-3 btn-secondary w-full block text-center">
-                    友だち追加
-                </Link>
-                <Link href="/friends" className="btn mt-3 btn-secondary w-full block text-center">
-                    友だち一覧
-                </Link>
-                <Link href="/friend_requests" className="btn mt-3 btn-secondary w-full block text-center">
-                    友だち申請一覧
-                </Link>
-            </div>
-        </div>
+      <div className="space-y-3 pt-6">
+        <button
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
+          onClick={() => router.push('/new-chat')}
+        >
+          ➕ 新しいチャットを作成
+        </button>
+        <Link
+          href="/friends"
+          className="block text-center w-full border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+        >
+          👥 友だち一覧
+        </Link>
+      </div>
+    </div>
     )
 }
