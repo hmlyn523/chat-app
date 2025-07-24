@@ -48,19 +48,27 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
 
   return (
     <div>
-      <h2>ユーザー一覧</h2>
-      <ul>
+      <h2 className="text-xl font-semibold mb-2">ユーザー一覧</h2>
+      <ul className="space-y-2">
         {users.map((u) => {
           const status = sentRequests[u.id]
+          const name = u.user_profiles?.nickname || u.email
 
           return (
-            <li key={u.id}>
-              {u.user_profiles?.nickname || u.email}
-              {status === 'pending' && <span className="ml-2 text-gray-500">申請中</span>}
-              {status === 'accepted' && <span className="ml-2 text-green-600">友だち</span>}
+            <li
+              key={u.id}
+              className="flex items-center justify-between border p-3 rounded shadow-sm bg-white"
+            >
+              <span className="text-sm">{name}</span>
+              {status === 'pending' && (
+                <span className="text-xs text-gray-500">申請中</span>
+              )}
+              {status === 'accepted' && (
+                <span className="text-xs text-green-600">友だち</span>
+              )}
               {status === 'rejected' && (
                 <button
-                  className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
+                  className="text-xs bg-red-500 text-white px-3 py-1 rounded"
                   onClick={() => handleRequest(u.id)}
                 >
                   再申請
@@ -68,10 +76,10 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               )}
               {!status && (
                 <button
-                  className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
+                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded"
                   onClick={() => handleRequest(u.id)}
                 >
-                  友だち申請
+                  申請
                 </button>
               )}
             </li>

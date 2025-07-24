@@ -146,7 +146,7 @@ export default function Home() {
     }
 
     return (
-    <div className="max-w-md mx-auto p-20 space-y-6">
+    <div className="max-w-md mx-auto pt-24 space-y-6">
       <header className="text-center">
         <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
       </header>
@@ -174,13 +174,13 @@ export default function Home() {
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
           onClick={() => router.push('/new-chat')}
         >
-          ➕ 新しいチャットを作成
+          ➕ チャット作成
         </button>
         <Link
           href="/friends"
           className="block text-center w-full border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
         >
-          👥 友だち一覧
+          👥 友だち
         </Link>
       </div>
     </div>

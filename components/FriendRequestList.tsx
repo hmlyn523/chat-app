@@ -8,7 +8,9 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
   useEffect(() => {
     const load = async () => {
       const { data } = await getFriendRequests(currentUserId)
-      setRequests(data?.filter((r) => r.receiver_id === currentUserId && r.status === 'pending') || [])
+      setRequests(
+        data?.filter((r) => r.receiver_id === currentUserId && r.status === 'pending') || []
+      )
     }
     load()
   }, [currentUserId])
@@ -17,7 +19,6 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
     await acceptFriendRequest(id)
     setRequests((prev) => prev.filter((r) => r.id !== id))
     alert('友だちになりました！')
-    // ここで DM チャット作成処理を入れてもOK
   }
 
   const handleReject = async (id: string) => {
@@ -27,19 +28,35 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
 
   return (
     <div>
-      <h2>受信した友だち申請</h2>
-      {requests.length === 0 && <p>新しい申請はありません。</p>}
-      <ul>
-        {requests.map((r) => (
-          <li key={r.id}>
-            {r.sender_id}
-            <button className="ml-2 bg-green-500 text-white px-2 py-1 rounded"
-              onClick={() => handleAccept(r.id)}>承認</button>
-            <button className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
-              onClick={() => handleReject(r.id)}>拒否</button>
-          </li>
-        ))}
-      </ul>
+      <h2 className="text-xl font-semibold mb-2">受信した友だち申請</h2>
+      {requests.length === 0 ? (
+        <p className="text-sm text-gray-500">新しい申請はありません。</p>
+      ) : (
+        <ul className="space-y-2">
+          {requests.map((r) => (
+            <li
+              key={r.id}
+              className="flex items-center justify-between border p-3 rounded shadow-sm bg-white"
+            >
+              <span className="text-sm">{r.sender_id}</span>
+              <div className="flex space-x-2">
+                <button
+                  className="text-xs bg-green-500 text-white px-3 py-1 rounded"
+                  onClick={() => handleAccept(r.id)}
+                >
+                  承認
+                </button>
+                <button
+                  className="text-xs bg-red-500 text-white px-3 py-1 rounded"
+                  onClick={() => handleReject(r.id)}
+                >
+                  拒否
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
