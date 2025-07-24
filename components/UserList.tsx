@@ -11,7 +11,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
       // ユーザー一覧取得
       const { data: usersData } = await supabase
         .from('users')
-        .select('id, email')
+        .select('id, email, user_profiles(nickname)')
 
       const filteredUsers = usersData?.filter((u) => u.id !== currentUserId) || []
       setUsers(filteredUsers)
@@ -55,7 +55,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
 
           return (
             <li key={u.id}>
-              {u.email}
+              {u.user_profiles?.nickname || u.email}
               {status === 'pending' && <span className="ml-2 text-gray-500">申請中</span>}
               {status === 'accepted' && <span className="ml-2 text-green-600">友だち</span>}
               {status === 'rejected' && (

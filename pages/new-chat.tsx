@@ -39,7 +39,7 @@ export default function NewChat() {
       // 相手ユーザーの情報を users テーブルから取得
       const { data: friendUsers, error: usersError } = await supabase
         .from('users')
-        .select('id, email')
+        .select('id, email, user_profiles(nickname)')
         .in('id', friendIds)
 
       if (usersError) {
@@ -118,7 +118,7 @@ export default function NewChat() {
               onChange={() => toggleUser(u.id)}
               className="mr-2"
             />
-            {u.email}
+            {u.user_profiles?.nickname || u.email}
           </label>
         ))}
       </div>
