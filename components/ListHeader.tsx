@@ -28,7 +28,7 @@ export default function ListHeader() {
           tabIndex={showBackButton ? 0 : -1}
           aria-hidden={showBackButton ? 'false' : 'true'}
         >
-          ≪
+          ＜
         </button>
         <h1 className="text-2xl font-bold leading-none align-middle">ヒトコト</h1>
       </div>

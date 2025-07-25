@@ -151,23 +151,25 @@ export default function Home() {
         <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
       </header>
 
-      <ul className="space-y-3">
-        {chats.map((c) => (
-          <li key={c.chat_id}>
+        <ul className="space-y-3 px-4">
+          {chats.map((c) => (
+            <li key={c.chat_id}>
             <button
-              onClick={() => router.push(`/chat/${c.chat_id}`)}
-              className="w-full text-left p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition flex justify-between items-center"
+                onClick={() => router.push(`/chat/${c.chat_id}`)}
+                className="w-full bg-white rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-between px-5 py-4"
             >
-              <span className="font-medium text-gray-800 truncate">{c.name}</span>
-              {unreadCounts[c.chat_id] > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                  {unreadCounts[c.chat_id]}
+                <span className="text-base font-semibold text-gray-900 truncate">
+                {c.name}
                 </span>
-              )}
+                {unreadCounts[c.chat_id] > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    {unreadCounts[c.chat_id]}
+                </span>
+                )}
             </button>
-          </li>
+            </li>
         ))}
-      </ul>
+        </ul>
 
       <div className="space-y-3 pt-6 flex flex-col items-center">
         <button
