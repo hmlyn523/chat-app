@@ -416,7 +416,7 @@ export default function ChatRoom() {
                                             <img
                                                 src={msg.image_url}
                                                 alt="uploaded"
-                                                className="max-w-xs mt-2 rounded"
+                                                className="mt-2 rounded max-w-full h-auto max-h-60"
                                             />
                                         )}
                                     </div>
