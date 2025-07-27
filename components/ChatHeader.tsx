@@ -74,7 +74,7 @@ export default function ChatHeader() {
   // 表示するタイトルを構築
   const displayTitle = (() => {
     if (!chatId || members.length === 0) return ''
-    const otherMembers = members.filter((m) => m.id !== currentUserId)
+    const otherMembers = members.filter((m) => m.user_id !== currentUserId)
     const isGroup = members.length > 2
 
     if (isGroup) {
