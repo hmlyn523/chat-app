@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 
 type UserProfile = {
-  id: string
+  user_id: string
   nickname: string
 }
 
