@@ -98,6 +98,45 @@ export default function ChatRoom() {
         }
     }
 
+    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file || !chatId) return
+
+        const { data: userResponse } = await supabase.auth.getUser()
+        const user = userResponse.user
+        if (!user) return
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}_${user.id}.${fileExt}`
+        const filePath = `${chatId}/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+            .from('chat-images')
+            .upload(filePath, file)
+
+        if (uploadError) {
+            alert('画像のアップロードに失敗しました')
+            return
+        }
+
+        const { data: urlData } = supabase.storage
+            .from('chat-images')
+            .getPublicUrl(filePath)
+
+        const imageUrl = urlData?.publicUrl
+        if (!imageUrl) return
+
+        const { error: insertError } = await supabase
+            .from('messages')
+            .insert([{ chat_id: chatId, user_id: user.id, image_url: imageUrl }])
+
+        if (insertError) {
+            alert('画像付きメッセージの送信に失敗しました')
+        } else {
+            didInitialScrollRef.current = false
+        }
+    }
+
     // メッセージ一覧取得＋リアルタイム購読
     //   useEffect は、React のフックの一つで、コンポーネントのレンダリング後に副作用
     //   （データの取得、DOMの操作、タイマーなど）を実行するために使用される
@@ -144,6 +183,7 @@ export default function ChatRoom() {
                     content,
                     user_id,
                     created_at,
+                    image_url,
                     users (
                         email,
                         user_profiles (
@@ -368,7 +408,17 @@ export default function ChatRoom() {
                                             : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
                                         `}
                                     >
-                                        {msg.content}
+                                        {/* テキストがある場合は表示 */}
+                                        {msg.content && <p>{msg.content}</p>}
+
+                                        {/* 画像がある場合は表示 */}
+                                        {msg.image_url && (
+                                            <img
+                                                src={msg.image_url}
+                                                alt="uploaded"
+                                                className="max-w-xs mt-2 rounded"
+                                            />
+                                        )}
                                     </div>
                                     
                                     {/* 追加: 時間表示 */}
@@ -399,17 +449,30 @@ export default function ChatRoom() {
             {/* 固定フッター(入力欄 + 送信ボタン) */}
             <div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t z-10">
                 <div className="flex items-center gap-2">
+                    {/* 画像選択ボタン */}
                     <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="メッセージを入力"
-                    className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="image-upload"
                     />
+                    <label htmlFor="image-upload" className="cursor-pointer px-2 text-blue-500">
+                        📷
+                    </label>
+                    {/* 入力フォーム */}
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="メッセージを入力"
+                        className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+                        />
+                    {/* 送信ボタン */}
                     <button
-                    onClick={sendMessage}
-                    className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
-                    >
+                        onClick={sendMessage}
+                        className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
+                        >
                         送信
                     </button>
                 </div>
