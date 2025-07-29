@@ -392,14 +392,31 @@ export default function ChatRoom() {
         const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
         if (!container) return
 
+        const fetchUser = async () => {
+            const { data: userResponse } = await supabase.auth.getUser()
+            const user = userResponse?.user
+            if (user) {
+                setCurrentUserId(user.id)
+                currentUserIdRef.current = user.id
+            }
+        }
+
         const handleScroll = () => {
             const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20
             isAtBottomRef.current = isAtBottom
         }
 
+        fetchUser()
+
         container.addEventListener('scroll', handleScroll)
         return () => container.removeEventListener('scroll', handleScroll)
     }, [])
+
+    useEffect(() => {
+        if (currentUserId !== null) {
+            currentUserIdRef.current = currentUserId // 状態が変更されたタイミングでRefに反映
+        }
+    }, [currentUserId])
 
     // メッセージ送信
     const sendMessage = async () => {
