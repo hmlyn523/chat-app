@@ -7,10 +7,25 @@ export async function sendFriendRequest(senderId: string, receiverId: string) {
   return { error }
 }
 
+// export async function getFriendRequests(userId: string) {
+//   const { data, error } = await supabase
+//     .from('friend_requests')
+//     .select('id, sender_id, receiver_id, status, created_at')
+//     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`) // 自分が送った or 受けた
+//   return { data, error }
+// }
+
 export async function getFriendRequests(userId: string) {
   const { data, error } = await supabase
     .from('friend_requests')
-    .select('id, sender_id, receiver_id, status, created_at')
+    .select(`
+      id,
+      sender_id,
+      receiver_id,
+      status,
+      created_at,
+      sender:user_profiles!friend_requests_sender_id_fkey(nickname)
+    `)
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`) // 自分が送った or 受けた
   return { data, error }
 }

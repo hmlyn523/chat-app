@@ -38,7 +38,7 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
               key={r.id}
               className="flex items-center justify-between border p-3 rounded shadow-sm bg-white"
             >
-              <span className="text-sm">{r.sender_id}</span>
+              <span className="text-sm">{r.sender?.nickname || r.sender_id}</span>
               <div className="flex space-x-2">
                 <button
                   className="text-xs bg-green-500 text-white px-3 py-1 rounded"
