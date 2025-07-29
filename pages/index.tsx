@@ -146,45 +146,45 @@ export default function Home() {
     }
 
     return (
-    <div className="max-w-md mx-auto pt-24 space-y-6">
-      <header className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
-      </header>
+        <div className="max-w-md mx-auto pt-24 space-y-6">
+            <header className="text-center">
+                <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
+            </header>
 
-        <ul className="space-y-3 px-4">
-          {chats.map((c) => (
-            <li key={c.chat_id}>
-            <button
-                onClick={() => router.push(`/chat/${c.chat_id}`)}
-                className="w-full bg-white rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-between px-5 py-4"
-            >
-                <span className="text-base font-semibold text-gray-900 truncate">
-                {c.name}
-                </span>
-                {unreadCounts[c.chat_id] > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                    {unreadCounts[c.chat_id]}
-                </span>
-                )}
-            </button>
-            </li>
-        ))}
-        </ul>
+            <ul className="space-y-3 px-4">
+                {chats.map((c) => (
+                    <li key={c.chat_id}>
+                    <button
+                        onClick={() => router.push(`/chat/${c.chat_id}`)}
+                        className="w-full bg-white rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-between px-5 py-4"
+                    >
+                        <span className="text-base font-semibold text-gray-900 truncate">
+                            {c.name}
+                        </span>
+                        {unreadCounts[c.chat_id] > 0 && (
+                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                {unreadCounts[c.chat_id]}
+                            </span>
+                        )}
+                    </button>
+                    </li>
+                ))}
+            </ul>
 
-      <div className="space-y-3 pt-6 flex flex-col items-center">
-        <button
-          className="w-5/6 bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
-          onClick={() => router.push('/new-chat')}
-        >
-          ➕ チャット作成
-        </button>
-        <Link
-          href="/friends"
-          className="block text-center w-5/6 border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
-        >
-          👥 友だち
-        </Link>
-      </div>
-    </div>
+            <div className="space-y-3 pt-6 flex flex-col items-center">
+                <button
+                className="w-5/6 bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
+                onClick={() => router.push('/new-chat')}
+                >
+                    ➕ チャット作成
+                </button>
+                <Link
+                href="/friends"
+                className="block text-center w-5/6 border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
+                >
+                    👥 友だち
+                </Link>
+            </div>
+        </div>
     )
 }
