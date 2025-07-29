@@ -439,7 +439,7 @@ export default function ChatRoom() {
     // )
 
     return (
-        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden ">
+        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden">
 
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
@@ -525,7 +525,7 @@ export default function ChatRoom() {
             </div>
 
             {/* 固定フッター(入力欄 + 送信ボタン) */}
-            <div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t z-10">
+            <div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t z-10 touch-none overscroll-contain">
                 <div className="flex items-center gap-2">
                     {/* 画像選択ボタン */}
                     <input
