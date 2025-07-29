@@ -37,6 +37,8 @@ export default function ChatRoom() {
     // 初回のみフラグ
     const didInitialScrollRef = useRef(false)
 
+    const isAtBottomRef = useRef(true)
+
     // メッセージ一覧の一番下までスクロール
     // const scrollToBottom = () => {
     //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -166,9 +168,7 @@ export default function ChatRoom() {
             const user = userResponse?.user
             if (!user) return
 
-            supabase.auth.getUser().then(({ data }) => {
-                setCurrentUserId(data?.user?.id ?? null)
-            })
+             setCurrentUserId(user.id)
 
             // メッセージ本体の取得と既読登録
             // messages テーブルから取得: 指定されたチャットIDのメッセージをすべて取得
@@ -252,6 +252,9 @@ export default function ChatRoom() {
 
                     const nickname = (userData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
 
+                    const shouldScroll =
+                        newMessage.user_id === currentUserIdRef.current || isAtBottomRef.current
+
                     // setMessages: 受信メッセージ一覧に新しいメッセージを追加
                     setMessages((current) => {
                         const updated = [
@@ -267,6 +270,13 @@ export default function ChatRoom() {
                             }
                         ]
 
+                        if (shouldScroll) {
+                            // 自分のメッセージ or 画面下にいるときだけスクロール
+                            requestAnimationFrame(() => {
+                                safeScrollToBottom(messagesEndRef, 'smooth')
+                            })
+                        }
+
                         // 自分の投稿ならスクロール
                         if (newMessage.user_id === currentUserId ||
                             newMessage.user_id === currentUserIdRef.current) {
@@ -276,8 +286,14 @@ export default function ChatRoom() {
                         return updated
                     })
 
+                    const currentUserId = currentUserIdRef.current
+                    if (currentUserId && newMessage.user_id !== currentUserId) {
+                        await markMessagesAsRead([newMessage.id], currentUserId)
+                        // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+                    }
+    
                     // scrollToBottom()
-                    setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+                    // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                 }
             )
             .subscribe()
@@ -299,6 +315,19 @@ export default function ChatRoom() {
         })
         }
     }, [messages])
+
+    useEffect(() => {
+        const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
+        if (!container) return
+
+        const handleScroll = () => {
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20
+            isAtBottomRef.current = isAtBottom
+        }
+
+        container.addEventListener('scroll', handleScroll)
+        return () => container.removeEventListener('scroll', handleScroll)
+    }, [])
 
     // メッセージ送信
     const sendMessage = async () => {
