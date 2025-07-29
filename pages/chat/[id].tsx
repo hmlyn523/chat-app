@@ -290,7 +290,7 @@ export default function ChatRoom() {
         return () => {
             supabase.removeChannel(channel)
         }
-    }, [chatId, messages])
+    }, [chatId])
 
     // メッセージ送信
     const sendMessage = async () => {
