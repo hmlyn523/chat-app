@@ -206,7 +206,7 @@ export default function ChatRoom() {
                 // setTimeout(() => {
                 //     scrollToBottom('auto')
                 // }, 0)
-                setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+                // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                 // 表示したメッセージのIDだけ既読登録
                 const messageIds = (data || []).map((m) => m.id)
                 // 取得したメッセージを「既読」として登録
