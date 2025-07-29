@@ -287,17 +287,24 @@ export default function ChatRoom() {
                     })
 
                     const currentUserId = currentUserIdRef.current
-                    if (currentUserId && newMessage.user_id !== currentUserId) {
+                    // if (currentUserId && newMessage.user_id !== currentUserId) {
+                    //     await markMessagesAsRead([newMessage.id], currentUserId)
+                    //     // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+                    // }
+                    if (
+                        currentUserId &&
+                        newMessage.user_id !== currentUserId &&
+                        isAtBottomRef.current
+                    ) {
                         await markMessagesAsRead([newMessage.id], currentUserId)
-                        // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                     }
-    
                     // scrollToBottom()
                     // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
                 }
             )
             .subscribe()
 
+        // alter publication supabase_realtime add table public.message_reads;
         const readsChannel = supabase
             // Supabaseの realtime 機能で message_reads テーブルに新しい行（INSERT）が
             // 追加されたときに発火する
@@ -320,9 +327,9 @@ export default function ChatRoom() {
                                 const alreadyExists = msg.message_reads?.some((r: any) => r.user_id === read.user_id)
                                 if (!alreadyExists) {
                                     return {
-                                    ...msg,
-                                    message_reads: [...(msg.message_reads || []), { user_id: read.user_id }],
-                                    }
+                                        ...msg,
+                                        message_reads: [...(msg.message_reads || []), { user_id: read.user_id }],
+                                        }
                                 }
                             }
                             return msg
@@ -342,6 +349,9 @@ export default function ChatRoom() {
     }, [chatId])
 
     useEffect(() => {
+        const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
+        if (!container) return
+        
         if (messages.length > 0 && !didInitialScrollRef.current) {
             // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
             requestAnimationFrame(() => {
@@ -349,6 +359,33 @@ export default function ChatRoom() {
                 didInitialScrollRef.current = true
             })
         }
+
+        const handleScroll = () => {
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20
+            isAtBottomRef.current = isAtBottom
+
+            // 👇 スクロールで下に着いたら未読メッセージを既読にする（オプション）
+            if (
+                isAtBottom &&
+                currentUserIdRef.current &&
+                messages.length > 0
+            ) {
+                
+                const unreadMessageIds = messages
+                    .filter((m) =>
+                        m.user_id !== currentUserIdRef.current &&
+                        !(m.message_reads || []).some((r: any) => r.user_id === currentUserIdRef.current)
+                    )
+                    .map((m) => m.id)
+
+                if (unreadMessageIds.length > 0) {
+                    markMessagesAsRead(unreadMessageIds, currentUserIdRef.current)
+                }
+            }
+        }
+
+        container.addEventListener('scroll', handleScroll)
+        return () => container.removeEventListener('scroll', handleScroll)
     }, [messages])
 
     useEffect(() => {
