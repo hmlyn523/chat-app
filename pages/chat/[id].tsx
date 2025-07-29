@@ -502,8 +502,7 @@ export default function ChatRoom() {
                                     {isMine && (
                                         <div className="text-xs text-right mt-1 text-gray-500">
                                             {readCount === totalOtherMembers
-                                            ? '既読'
-                                            : `既読 ${readCount} / ${totalOtherMembers}`}
+                                            ? '既読' : ''}
                                         </div>
                                     )}
                                 </div>
