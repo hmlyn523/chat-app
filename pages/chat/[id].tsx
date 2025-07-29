@@ -85,7 +85,7 @@ export default function ChatRoom() {
             message_id: messageId,
             user_id: userId,
         }))
-
+        
         // 重複があるとinsert失敗するので upsert を使う
         const { error } = await supabase
             .from('message_reads')
@@ -217,7 +217,7 @@ export default function ChatRoom() {
         fetchUsers()
 
         // リアルタイム購読
-        const channel = supabase
+        const messageChannel = supabase
             // Supabaseの realtime 機能で messages テーブルに新しい行（INSERT）が
             // 追加されたときに発火する
             .channel('public:messages')
@@ -298,21 +298,56 @@ export default function ChatRoom() {
             )
             .subscribe()
 
+        const readsChannel = supabase
+            // Supabaseの realtime 機能で message_reads テーブルに新しい行（INSERT）が
+            // 追加されたときに発火する
+            .channel('public:message_reads')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'message_reads'
+                    // filter: `message_id=in.(${messages.map((m) => `'${m.id}'`).join(',')})`
+                },
+                async (payload) => {
+                    const read = payload.new
+
+                    // read.message_id に対して該当する message を更新
+                    setMessages((current) => {
+                        return current.map((msg) => {
+                            if (msg.id === read.message_id) {
+                                const alreadyExists = msg.message_reads?.some((r: any) => r.user_id === read.user_id)
+                                if (!alreadyExists) {
+                                    return {
+                                    ...msg,
+                                    message_reads: [...(msg.message_reads || []), { user_id: read.user_id }],
+                                    }
+                                }
+                            }
+                            return msg
+                        })
+                    })
+                }
+            )
+            .subscribe()
+
         // 購読解除
         // コンポーネントがアンマウントされた時（例：チャットを抜けたとき）に、リアルタイム購読を解除
         // これにより、メモリリークや不要なリアルタイム更新を防ぐ
         return () => {
-            supabase.removeChannel(channel)
+            supabase.removeChannel(messageChannel)
+            supabase.removeChannel(readsChannel)
         }
     }, [chatId])
 
     useEffect(() => {
         if (messages.length > 0 && !didInitialScrollRef.current) {
-        // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
-        requestAnimationFrame(() => {
-            safeScrollToBottom(messagesEndRef, 'auto')
-            didInitialScrollRef.current = true
-        })
+            // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
+            requestAnimationFrame(() => {
+                safeScrollToBottom(messagesEndRef, 'auto')
+                didInitialScrollRef.current = true
+            })
         }
     }, [messages])
 
@@ -428,11 +463,11 @@ export default function ChatRoom() {
 
                                     {/* 👇 既読表示を追加（自分の投稿のみ） */}
                                     {isMine && (
-                                    <div className="text-xs text-right mt-1 text-gray-500">
-                                        {readCount === totalOtherMembers
-                                        ? '既読'
-                                        : `既読 ${readCount} / ${totalOtherMembers}`}
-                                    </div>
+                                        <div className="text-xs text-right mt-1 text-gray-500">
+                                            {readCount === totalOtherMembers
+                                            ? '既読'
+                                            : `既読 ${readCount} / ${totalOtherMembers}`}
+                                        </div>
                                     )}
                                 </div>
                             </div>
