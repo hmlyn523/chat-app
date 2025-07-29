@@ -42,13 +42,11 @@ export default function ChatRoom() {
     //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     // }
     const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>, behavior: ScrollBehavior = 'auto') => {
-        // Safari対策で2回ラフに遅延
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-            ref.current?.scrollIntoView({ behavior })
-            }, 100)
-        })
+        // 明示的に「すぐにスクロール」するように
+        if (!ref.current) return
+        ref.current.scrollIntoView({ behavior })
     }
+
 
     // チャットルームのメンバー一覧を取得
     const fetchMembers = async () => {
@@ -292,6 +290,16 @@ export default function ChatRoom() {
         }
     }, [chatId])
 
+    useEffect(() => {
+        if (messages.length > 0 && !didInitialScrollRef.current) {
+        // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
+        requestAnimationFrame(() => {
+            safeScrollToBottom(messagesEndRef, 'auto')
+            didInitialScrollRef.current = true
+        })
+        }
+    }, [messages])
+
     // メッセージ送信
     const sendMessage = async () => {
         if (!input.trim()) return
@@ -320,47 +328,6 @@ export default function ChatRoom() {
 
     return (
         <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden ">
-
-            {/* 上部：メンバー追加など */}
-            <div className="p-2 space-y-4 overflow-y-auto">
-
-                {/* メンバー追加UI */}
-                {unjoinedUsers.length > 0 && (
-                    <div>
-                        <h2 className="font-semibold mb-2">メンバー追加</h2>
-                        <ul className="space-y-2">
-                            {allUsers
-                            .filter((u) => !members.find((m) => m.user_id === u.id)) // 未参加者だけ
-                            .map((user) => (
-                                <li key={user.id} className="flex justify-between items-center">
-                                <span>{user.email}</span>
-                                <button
-                                    className="bg-blue-500 text-white text-xs px-2 py-1 rounded"
-                                    onClick={async () => {
-                                    const { error } = await supabase
-                                        .from('chat_members')
-                                        .insert([{ chat_id: chatId, user_id: user.id }])
-                                    if (!error) {
-                                        // UI反映＋is_groupをtrueに
-                                        setMembers((prev) => [
-                                        ...prev,
-                                        { user_id: user.id, users: { email: user.email } },
-                                        ])
-                                        await supabase
-                                        .from('chats')
-                                        .update({ is_group: true })
-                                        .eq('id', chatId)
-                                    }
-                                    }}
-                                >
-                                    追加
-                                </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </div>
 
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
