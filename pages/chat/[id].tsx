@@ -412,12 +412,6 @@ export default function ChatRoom() {
         return () => container.removeEventListener('scroll', handleScroll)
     }, [])
 
-    useEffect(() => {
-        if (currentUserId !== null) {
-            currentUserIdRef.current = currentUserId // 状態が変更されたタイミングでRefに反映
-        }
-    }, [currentUserId])
-
     // メッセージ送信
     const sendMessage = async () => {
         if (!input.trim()) return
