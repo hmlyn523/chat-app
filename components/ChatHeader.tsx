@@ -95,7 +95,7 @@ export default function ChatHeader() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center">
+    <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center touch-none overscroll-contain">
       <div className="flex items-center gap-2">
         {isChatRoom && (
           <button onClick={() => router.push('/')} className="text-xl mr-2 font-bold">
