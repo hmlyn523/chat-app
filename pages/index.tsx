@@ -148,7 +148,7 @@ export default function Home() {
     return (
         <div className="max-w-md mx-auto pt-24 space-y-6">
             <header className="text-center">
-                <h1 className="text-2xl font-bold text-gray-800">📬 Connect with friends</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Connect with friends</h1>
             </header>
 
             <ul className="space-y-3 px-4">

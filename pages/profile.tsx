@@ -55,11 +55,13 @@ export default function Profile() {
 
     return (
         <div className="mt-20 p-4">
-            <h1 className="text-xl font-bold mb-4">Edit Profile</h1>
+            <div className="text-center">
+                <h1 className="text-xl font-bold mb-4">Edit Profile</h1>
+            </div>
 
             <div className="space-y-4 max-w-sm mx-auto">
                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nickname</label>
+                <label className="font-semibold mb-2 w-full text-left">Nickname:</label>
                 <input
                     type="text"
                     value={nickname}
