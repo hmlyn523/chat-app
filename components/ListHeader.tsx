@@ -17,6 +17,11 @@ export default function ListHeader() {
 
   const showBackButton = pathname !== '/'
 
+  // プロフィールページに遷移する関数
+  const goToProfile = () => {
+    router.push('/profile') // /profile ページへ遷移
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center">
       <div className="flex items-center gap-2">
@@ -33,12 +38,20 @@ export default function ListHeader() {
         <h1 className="text-2xl font-bold leading-none align-middle">ヒトコト</h1>
       </div>
 
-      <button
-        onClick={handleLogout}
-        className="text-sm text-blue-500"
-      >
-        ログアウト
-      </button>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={goToProfile}
+          className="text-sm text-blue-500"
+        >
+          プロフィール
+        </button>
+        <button
+          onClick={handleLogout}
+          className="text-sm text-blue-500"
+        >
+          ログアウト
+        </button>
+      </div>
     </header>
   )
 }
