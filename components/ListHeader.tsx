@@ -22,6 +22,13 @@ export default function ListHeader() {
     router.push('/profile') // /profile ページへ遷移
   }
 
+  const getPageTitle = () => {
+    if (pathname === '/friends') return 'Friend'
+    if (pathname === '/profile') return 'Profile'
+    if (pathname === '/friends/add') return 'Add Friend'
+    return '🤫 SnapTalk 🤫' // デフォルト
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between shadow items-center">
       <div className="flex items-center gap-2">
@@ -35,7 +42,7 @@ export default function ListHeader() {
         >
           {showBackButton ? '←' : ''}
         </button>
-        <h1 className="text-2xl font-bold leading-none align-middle">SnapTalk</h1>
+        <h1 className="text-2xl font-bold leading-none align-middle">{getPageTitle()}</h1>
       </div>
 
       <div className="flex items-center gap-4">
