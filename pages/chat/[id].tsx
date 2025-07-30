@@ -115,7 +115,7 @@ export default function ChatRoom() {
             .upload(filePath, file)
 
         if (uploadError) {
-            alert('画像のアップロードに失敗しました')
+            alert('Image upload failed.')
             return
         }
 
@@ -131,7 +131,7 @@ export default function ChatRoom() {
             .insert([{ chat_id: chatId, user_id: user.id, image_url: imageUrl }])
 
         if (insertError) {
-            alert('画像付きメッセージの送信に失敗しました')
+            alert('Failed to send message with image.')
         } else {
             didInitialScrollRef.current = false
         }
@@ -424,7 +424,7 @@ export default function ChatRoom() {
             .from('messages')
             .insert([{ chat_id: chatId, user_id: user.id, content: input }])
         if (error) {
-            alert('メッセージ送信に失敗しました')
+            alert('メMessage sending failed.')
         } else {
             setInput('')
             didInitialScrollRef.current = false
@@ -513,7 +513,7 @@ export default function ChatRoom() {
                                     {isMine && (
                                         <div className="text-xs text-right mt-1 text-gray-500">
                                             {readCount === totalOtherMembers
-                                            ? '既読' : ''}
+                                            ? 'read' : ''}
                                         </div>
                                     )}
                                 </div>
@@ -543,7 +543,7 @@ export default function ChatRoom() {
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="メッセージを入力"
+                        placeholder="Enter message..."
                         className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
                         />
                     {/* 送信ボタン */}
@@ -551,7 +551,7 @@ export default function ChatRoom() {
                         onClick={sendMessage}
                         className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
                         >
-                        送信
+                        send
                     </button>
                 </div>
             </div>

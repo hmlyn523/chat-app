@@ -18,7 +18,7 @@ export default function AddFriendPage() {
       .then(setUsers)
       .catch((error) => {
         console.error('ユーザー取得失敗:', error)
-        alert('ユーザーの取得に失敗しました。')
+        alert('Failed to retrieve user.')
       })
   }, [session?.user?.id])
 
@@ -26,10 +26,10 @@ export default function AddFriendPage() {
     if (!session?.user?.id) return
     try {
       await requestFriend(session.user.id, receiverId)
-      alert('申請を送りました！')
+      alert('I sent in my application.')
     } catch (error) {
       console.error('申請エラー:', error)
-      alert('申請に失敗しました。')
+      alert('Application failed.')
     }
   }
 

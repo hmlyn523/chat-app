@@ -33,7 +33,7 @@ export default function ListHeader() {
           tabIndex={showBackButton ? 0 : -1}
           aria-hidden={showBackButton ? 'false' : 'true'}
         >
-          ＜
+          {showBackButton ? '←' : ''}
         </button>
         <h1 className="text-2xl font-bold leading-none align-middle">SnapTalk</h1>
       </div>
@@ -43,13 +43,13 @@ export default function ListHeader() {
           onClick={goToProfile}
           className="text-sm text-blue-500"
         >
-          プロフィール
+          Profile
         </button>
         <button
           onClick={handleLogout}
           className="text-sm text-blue-500"
         >
-          ログアウト
+          Log out
         </button>
       </div>
     </header>

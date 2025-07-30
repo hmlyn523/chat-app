@@ -28,7 +28,7 @@ export function AuthForm() {
         }
       }
 
-      alert('サインアップ確認メールを送信しました')
+      alert('We have sent you a sign-up confirmation email.')
     }
   }
 
@@ -40,21 +40,21 @@ export function AuthForm() {
   return (
     <div className="max-w-sm mx-auto p-4 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">
-        {isSignUp ? 'サインアップ（新規登録）' : 'ログイン'}
+        {isSignUp ? 'Sign up (new registration)' : 'Login'}
       </h2>
 
       <input
         type="email"
         value={email}
         onChange={e => setEmail(e.target.value)}
-        placeholder="メールアドレス"
+        placeholder="Email address"
         className="w-full border p-2 mb-2 rounded"
       />
       <input
         type="password"
         value={password}
         onChange={e => setPassword(e.target.value)}
-        placeholder="パスワード"
+        placeholder="Password"
         className="w-full border p-2 mb-2 rounded"
       />
 
@@ -64,7 +64,7 @@ export function AuthForm() {
           type="text"
           value={nickname}
           onChange={e => setNickname(e.target.value)}
-          placeholder="ニックネーム"
+          placeholder="Nickname"
           className="w-full border p-2 mb-4 rounded"
         />
       )}
@@ -74,14 +74,14 @@ export function AuthForm() {
           onClick={handleSignUp}
           className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
         >
-          サインアップ
+          Sign up
         </button>
       ) : (
         <button
           onClick={handleSignIn}
           className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
         >
-          ログイン
+          Login
         </button>
       )}
 
@@ -89,7 +89,7 @@ export function AuthForm() {
         onClick={() => setIsSignUp(!isSignUp)}
         className="mt-4 text-sm text-gray-600 underline"
       >
-        {isSignUp ? '→ 既にアカウントをお持ちの方はこちら' : '→ 新規登録はこちら'}
+        {isSignUp ? '> If you already have an account, click here.' : '> Click here to register'}
       </button>
     </div>
   )

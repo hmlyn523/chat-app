@@ -12,11 +12,11 @@ export default function FriendsPage() {
     })
   }, [])
 
-  if (!currentUserId) return <div className='text-2xl font-bold text-center mb-4'><p>ログイン情報を取得中...</p></div>
+  if (!currentUserId) return <div className='text-2xl font-bold text-center mb-4'><p>Retrieving login information...</p></div>
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 space-y-8">
-      <h1 className="text-2xl font-bold text-center mb-4">👥 友だちとつながろう</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">🌍Connect with anyone in the world</h1>
       <UserList currentUserId={currentUserId} />
       <FriendRequestList currentUserId={currentUserId} />
     </div>

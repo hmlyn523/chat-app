@@ -24,18 +24,18 @@ export default function FriendRequestsPage() {
     fetchRequests()
   }, [])
 
-  if (loading) return <p>読み込み中...</p>
+  if (loading) return <p>Loading...</p>
 
   return (
     <div className='mt-10' style={{ padding: '1rem' }}>
-      <h1>友だち申請一覧</h1>
+      <h1>friend requests.</h1>
       {requests.length === 0 ? (
-        <p>申請はありません。</p>
+        <p>There is no application.</p>
       ) : (
         <ul>
           {requests.map((req) => (
             <li key={req.id}>
-              送信者: {req.sender_id} / 受信者: {req.receiver_id} / 状態: {req.status}
+              Sender: {req.sender_id} / Recipient: {req.receiver_id} / Status: {req.status}
             </li>
           ))}
         </ul>

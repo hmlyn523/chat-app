@@ -77,17 +77,17 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
 
               {/* 自分が送った申請が pending の場合 */}
               {sentStatus === 'pending' && (
-                <span className="text-xs text-gray-500 ml-2">申請中</span>
+                <span className="text-xs text-gray-500 ml-2">Pending</span>
               )}
 
               {/* 自分が受け取った申請が pending の場合 */}
               {receivedStatus === 'pending' && (
-                <span className="text-xs text-blue-600 ml-2">承認待ち</span>
+                <span className="text-xs text-blue-600 ml-2">Pending approval</span>
               )}
 
               {/* どちらかが accepted の場合 */}
               {(sentStatus === 'accepted' || receivedStatus === 'accepted') && (
-                <span className="text-xs text-green-600 ml-2">友だち</span>
+                <span className="text-xs text-green-600 ml-2">Friend</span>
               )}
 
               {/* 自分が送った申請が rejected の場合 */}
@@ -96,7 +96,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
                   className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
-                  再申請
+                  Reapplication
                 </button>
               )}
 
@@ -106,7 +106,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
                   className="text-xs bg-blue-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
-                  申請
+                  Application
                 </button>
               )}
             </li>

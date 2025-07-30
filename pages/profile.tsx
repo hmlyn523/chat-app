@@ -45,21 +45,21 @@ export default function Profile() {
         setLoading(false)
 
         if (!error) {
-            setMessage('保存されました') // ✅ 通知をセット
+            setMessage('Saved.') // ✅ 通知をセット
             setTimeout(() => setMessage(''), 3000) // 3秒で非表示
         } else {
-            setMessage('保存に失敗しました')
+            setMessage('Failed to save.')
             setTimeout(() => setMessage(''), 3000)
         }
     }
 
     return (
         <div className="mt-20 p-4">
-            <h1 className="text-xl font-bold mb-4">プロフィール編集</h1>
+            <h1 className="text-xl font-bold mb-4">Edit Profile</h1>
 
             <div className="space-y-4 max-w-sm mx-auto">
                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ニックネーム</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nickname</label>
                 <input
                     type="text"
                     value={nickname}
@@ -75,7 +75,7 @@ export default function Profile() {
                         loading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
                     }`}
                 >
-                    {loading ? '保存中...' : '保存'}
+                    {loading ? 'Saving...' : 'Save'}
                 </button>
 
                 {/* ✅ メッセージ表示 */}

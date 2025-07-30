@@ -29,7 +29,7 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
   return (
     <div>
       {requests.length === 0 ? (
-        <p className="text-sm text-gray-500">新しい申請はありません。</p>
+        <p className="text-sm text-gray-500">There are no new applications.</p>
       ) : (
         <ul className="space-y-2">
           {requests.map((r) => (
@@ -43,13 +43,13 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
                   className="text-xs bg-green-500 text-white px-3 py-1 rounded"
                   onClick={() => handleAccept(r.id)}
                 >
-                  承認
+                  Approval
                 </button>
                 <button
                   className="text-xs bg-red-500 text-white px-3 py-1 rounded"
                   onClick={() => handleReject(r.id)}
                 >
-                  拒否
+                  Refusal
                 </button>
               </div>
             </li>

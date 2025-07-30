@@ -61,7 +61,7 @@ export default function NewChat() {
 
   const createChat = async () => {
     if (selectedUserIds.length === 0 || !user) {
-      alert('1人以上選択してください')
+      alert('Please select at least one person.')
       return
     }
 
@@ -75,7 +75,7 @@ export default function NewChat() {
       .single()
 
     if (chatError || !chat) {
-      alert('チャット作成に失敗しました')
+      alert('Failed to create chat.')
       return
     }
 
@@ -88,7 +88,7 @@ export default function NewChat() {
     )
 
     if (memberError) {
-      alert('メンバー追加に失敗しました')
+      alert('Failed to add member.')
       return
     }
 
@@ -97,11 +97,11 @@ export default function NewChat() {
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 pb-10">
-      <h1 className="text-2xl font-bold text-center mb-6">新しいチャット作成</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">Create a new chat</h1>
 
       {selectedUserIds.length > 1 && (
         <input
-          placeholder="グループ名（任意）"
+          placeholder="Loop name (optional)"
           className="w-full mb-4 px-3 py-2 border rounded shadow-sm"
           value={chatName}
           onChange={(e) => setChatName(e.target.value)}
@@ -109,7 +109,7 @@ export default function NewChat() {
       )}
 
       <div className="mb-6 flex flex-col items-center">
-        <p className="font-semibold mb-2 w-full text-left">メンバーを選択：</p>
+        <p className="font-semibold mb-2 w-full text-left">Select members：</p>
         <ul className="space-y-2 w-full max-w-xs">
           {users.map((u) => {
             const isChecked = selectedUserIds.includes(u.id)
@@ -141,7 +141,7 @@ export default function NewChat() {
           onClick={createChat}
           className="w-5/6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
         >
-          作成する
+          Create
         </button>
       </div>
     </div>

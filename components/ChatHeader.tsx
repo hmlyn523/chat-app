@@ -85,7 +85,7 @@ export default function ChatHeader() {
         return `${names} (${members.length})`
       }
     } else {
-      return otherMembers[0]?.nickname ?? 'チャット'
+      return otherMembers[0]?.nickname ?? 'Chat'
     }
   })()
 
@@ -99,7 +99,7 @@ export default function ChatHeader() {
       <div className="flex items-center gap-2">
         {isChatRoom && (
           <button onClick={() => router.push('/')} className="text-xl mr-2 font-bold">
-            ＜
+            ←
           </button>
         )}
         <h1 className="text-2xl font-bold leading-none align-middle">{displayTitle}</h1>

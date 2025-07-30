@@ -63,7 +63,7 @@ export default function Home() {
                     const nickname = others.length === 1
                     ? others[0]?.users?.user_profiles?.nickname
                         || others[0]?.users?.email
-                        || '（相手）'
+                        || '（Partner）'
                     : others.map(m =>
                         m.users?.user_profiles?.nickname
                         || m.users?.email
@@ -72,7 +72,7 @@ export default function Home() {
 
                     return {
                     chat_id: chatId,
-                    name: chatName ?? nickname ?? '（無名）',
+                    name: chatName ?? nickname ?? '（Anonymous）',
                     }
                 })
 
@@ -84,7 +84,7 @@ export default function Home() {
             const { data, error } = await supabase.rpc('get_unread_counts', { user_uuid: user.id })
 
             if (error) {
-                console.error('未読件数取得失敗:', error.message)
+                console.error('Failed to retrieve unread items:', error.message)
             } else {
                 // dataは {chat_id: string, unread_count: number} の配列
                 const counts: Record<string, number> = {};
@@ -142,13 +142,13 @@ export default function Home() {
     }, [session, user])
 
     if (session === null) {
-        return <p>リダイレクト中...</p>
+        return <p>Redirecting...</p>
     }
 
     return (
         <div className="max-w-md mx-auto pt-24 space-y-6">
             <header className="text-center">
-                <h1 className="text-2xl font-bold text-gray-800">📬 友達とつながろう</h1>
+                <h1 className="text-2xl font-bold text-gray-800">📬 Connect with friends</h1>
             </header>
 
             <ul className="space-y-3 px-4">
@@ -176,13 +176,13 @@ export default function Home() {
                 className="w-5/6 bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
                 onClick={() => router.push('/new-chat')}
                 >
-                    ➕ チャット作成
+                    ➕ Create chat
                 </button>
                 <Link
                 href="/friends"
                 className="block text-center w-5/6 border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
                 >
-                    👥 友だち
+                    👥 Friend
                 </Link>
             </div>
         </div>
