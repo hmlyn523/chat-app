@@ -39,6 +39,8 @@ export default function ChatRoom() {
 
     const isAtBottomRef = useRef(true)
 
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
+
     // メッセージ一覧の一番下までスクロール
     // const scrollToBottom = () => {
     //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -406,10 +408,19 @@ export default function ChatRoom() {
             isAtBottomRef.current = isAtBottom
         }
 
+        const handleResize = () => {
+            const heightRatio = window.innerHeight / window.outerHeight
+            setIsKeyboardOpen(heightRatio < 0.75) // キーボード表示と判定
+        }
+
         fetchUser()
 
         container.addEventListener('scroll', handleScroll)
-        return () => container.removeEventListener('scroll', handleScroll)
+        window.addEventListener('resize', handleResize)
+        return () => {
+            container.removeEventListener('scroll', handleScroll)
+            window.removeEventListener('resize', handleResize)
+        }
     }, [])
 
     // メッセージ送信
