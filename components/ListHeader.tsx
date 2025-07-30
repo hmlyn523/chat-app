@@ -35,7 +35,7 @@ export default function ListHeader() {
         >
           ＜
         </button>
-        <h1 className="text-2xl font-bold leading-none align-middle">ヒトコト</h1>
+        <h1 className="text-2xl font-bold leading-none align-middle">SnapTalk</h1>
       </div>
 
       <div className="flex items-center gap-4">

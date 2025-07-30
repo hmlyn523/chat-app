@@ -102,7 +102,7 @@ export default function ChatHeader() {
             ＜
           </button>
         )}
-        <h1 className="font-bold text-lg truncate">{displayTitle}</h1>
+        <h1 className="text-2xl font-bold leading-none align-middle">{displayTitle}</h1>
       </div>
     </header>
   )

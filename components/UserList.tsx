@@ -55,7 +55,6 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">ユーザー一覧</h2>
       <ul className="space-y-2">
         {users.map((u) => {
           const sentStatus = sentRequests[u.id]  // 自分が送った申請状況

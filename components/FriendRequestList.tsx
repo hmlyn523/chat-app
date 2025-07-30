@@ -28,7 +28,6 @@ export default function FriendRequestList({ currentUserId }: { currentUserId: st
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2">受信した友だち申請</h2>
       {requests.length === 0 ? (
         <p className="text-sm text-gray-500">新しい申請はありません。</p>
       ) : (
