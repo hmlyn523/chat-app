@@ -45,12 +45,14 @@ export default function ChatRoom() {
     // const scrollToBottom = () => {
     //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     // }
-    const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>, behavior: ScrollBehavior = 'auto') => {
-        // 明示的に「すぐにスクロール」するように
+    const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>) => {
         if (!ref.current) return
-        ref.current.scrollIntoView({ behavior })
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                ref.current?.scrollIntoView({ behavior: 'auto' })
+            })
+        }, 100)
     }
-
 
     // チャットルームのメンバー一覧を取得
     const fetchMembers = async () => {
@@ -150,7 +152,7 @@ export default function ChatRoom() {
 
         if (messages.length > 0 && !didInitialScrollRef.current) {
             setTimeout(() => {
-                safeScrollToBottom(messagesEndRef, 'auto')
+                safeScrollToBottom(messagesEndRef)
                 didInitialScrollRef.current = true
             }, 100)
         }
@@ -275,14 +277,14 @@ export default function ChatRoom() {
                         if (shouldScroll) {
                             // 自分のメッセージ or 画面下にいるときだけスクロール
                             requestAnimationFrame(() => {
-                                safeScrollToBottom(messagesEndRef, 'smooth')
+                                safeScrollToBottom(messagesEndRef)
                             })
                         }
 
                         // 自分の投稿ならスクロール
                         if (newMessage.user_id === currentUserId ||
                             newMessage.user_id === currentUserIdRef.current) {
-                            setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
+                            setTimeout(() => safeScrollToBottom(messagesEndRef), 100)
                         }
 
                         return updated
@@ -357,7 +359,7 @@ export default function ChatRoom() {
         if (messages.length > 0 && !didInitialScrollRef.current) {
             // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
             requestAnimationFrame(() => {
-                safeScrollToBottom(messagesEndRef, 'auto')
+                safeScrollToBottom(messagesEndRef)
                 didInitialScrollRef.current = true
             })
         }
@@ -411,6 +413,13 @@ export default function ChatRoom() {
         const handleResize = () => {
             const heightRatio = window.innerHeight / window.outerHeight
             setIsKeyboardOpen(heightRatio < 0.75) // キーボード表示と判定
+alert('Keyboard is ' + (isKeyboardOpen ? 'open' : 'closed'))
+            // キーボードが閉じたと判断されたとき再スクロール
+            if (!isKeyboardOpen) {
+                setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+                }, 300)
+            }
         }
 
         fetchUser()
