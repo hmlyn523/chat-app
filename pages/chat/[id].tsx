@@ -420,12 +420,12 @@ export default function ChatRoom() {
             const isOpen = heightRatio < 1 // ここは調整可
             setIsKeyboardOpen(isOpen)
 
-            alert('Keyboard is ' + (isOpen ? 'open' : 'closed'))
+            // alert('Keyboard is ' + (isOpen ? 'open' : 'closed'))
 
             if (!isOpen) {
-                setTimeout(() => {
-                    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
-                }, 300)
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+            }, 300)
             }
         }
   
