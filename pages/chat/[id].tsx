@@ -41,17 +41,22 @@ export default function ChatRoom() {
 
     const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
 
-    // メッセージ一覧の一番下までスクロール
-    // const scrollToBottom = () => {
-    //     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    // }
     const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>) => {
         if (!ref.current) return
+        ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
         setTimeout(() => {
             requestAnimationFrame(() => {
                 ref.current?.scrollIntoView({ behavior: 'auto' })
             })
+            forceScrollToBottom()
         }, 100)
+    }
+
+    const forceScrollToBottom = () => {
+        const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
+        if (container) {
+            container.scrollTop = container.scrollHeight
+        }
     }
 
     // チャットルームのメンバー一覧を取得
@@ -464,7 +469,7 @@ export default function ChatRoom() {
     // )
 
     return (
-        <div className="pt-16 pb-20 h-screen flex flex-col overflow-hidden">
+        <div className="pt-16 pb-20 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
 
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
