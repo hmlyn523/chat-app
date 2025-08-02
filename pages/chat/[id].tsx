@@ -410,25 +410,30 @@ export default function ChatRoom() {
             isAtBottomRef.current = isAtBottom
         }
 
+        fetchUser()
+
         const handleResize = () => {
-            const heightRatio = window.innerHeight / window.outerHeight
-            setIsKeyboardOpen(heightRatio < 0.75) // キーボード表示と判定
-alert('Keyboard is ' + (isKeyboardOpen ? 'open' : 'closed'))
-            // キーボードが閉じたと判断されたとき再スクロール
-            if (!isKeyboardOpen) {
+            const heightRatio = window.visualViewport
+            ? window.visualViewport.height / window.visualViewport.width
+            : window.innerHeight / window.outerHeight
+
+            const isOpen = heightRatio < 1 // ここは調整可
+            setIsKeyboardOpen(isOpen)
+
+            alert('Keyboard is ' + (isOpen ? 'open' : 'closed'))
+
+            if (!isOpen) {
                 setTimeout(() => {
                     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
                 }, 300)
             }
         }
-
-        fetchUser()
-
+  
         container.addEventListener('scroll', handleScroll)
-        window.addEventListener('resize', handleResize)
+        window.visualViewport?.addEventListener('resize', handleResize)
         return () => {
             container.removeEventListener('scroll', handleScroll)
-            window.removeEventListener('resize', handleResize)
+            window.visualViewport?.removeEventListener('resize', handleResize)
         }
     }, [])
 
