@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/delete-old-images",
-      "schedule": "0 * * * *"
+      "schedule": "0 1 * * *"
     }
   ]
 }
