@@ -18,10 +18,9 @@ export default async function handler(_req: any, res: any) {
 
   // 2. ストレージから削除
   for (const msg of oldMessages) {
-    const imagePath = msg.image_url.split('/chat-images/')[1] // パスを抽出
-
-console.log(msg.image_url)
-console.log(imagePath)
+    const url = new URL(msg.image_url)
+    // const imagePath = msg.image_url.split('/chat-images/')[1] // パスを抽出
+    const imagePath = url.pathname.replace('/storage/v1/object/public/chat-images/', '')
 
     if (imagePath) {
       const { error: deleteError } = await supabase
