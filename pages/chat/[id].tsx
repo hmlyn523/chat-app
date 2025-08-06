@@ -49,7 +49,8 @@ export default function ChatRoom() {
                 ref.current?.scrollIntoView({ behavior: 'auto' })
             })
             forceScrollToBottom()
-        }, 100)
+        }, 300)
+        ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
     }
 
     const forceScrollToBottom = () => {
@@ -357,6 +358,12 @@ export default function ChatRoom() {
         }
     }, [chatId])
 
+
+    // messagesが更新されるたびに実行される。
+    // 初回スクロール処理や、スクロール位置によって未読メッセージを既読にする処理を行う。
+    // --
+    // 前回のmessagesの値と今回のmessagesの値が違うとき
+    // かつ、再レンダリング後（DOMの更新が終わったあと）
     useEffect(() => {
         const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
         if (!container) return
@@ -397,10 +404,9 @@ export default function ChatRoom() {
         return () => container.removeEventListener('scroll', handleScroll)
     }, [messages])
 
+    // 初回のみ呼ばれる
     useEffect(() => {
-        const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
-        if (!container) return
-
+        // ユーザID設定
         const fetchUser = async () => {
             const { data: userResponse } = await supabase.auth.getUser()
             const user = userResponse?.user
@@ -410,36 +416,7 @@ export default function ChatRoom() {
             }
         }
 
-        const handleScroll = () => {
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20
-            isAtBottomRef.current = isAtBottom
-        }
-
         fetchUser()
-
-        const handleResize = () => {
-            const heightRatio = window.visualViewport
-            ? window.visualViewport.height / window.visualViewport.width
-            : window.innerHeight / window.outerHeight
-
-            const isOpen = heightRatio < 1 // ここは調整可
-            setIsKeyboardOpen(isOpen)
-
-            // alert('Keyboard is ' + (isOpen ? 'open' : 'closed'))
-
-            if (!isOpen) {
-            setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
-            }, 300)
-            }
-        }
-  
-        container.addEventListener('scroll', handleScroll)
-        window.visualViewport?.addEventListener('resize', handleResize)
-        return () => {
-            container.removeEventListener('scroll', handleScroll)
-            window.visualViewport?.removeEventListener('resize', handleResize)
-        }
     }, [])
 
     // メッセージ送信
