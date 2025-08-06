@@ -20,6 +20,9 @@ export default async function handler(_req: any, res: any) {
   for (const msg of oldMessages) {
     const imagePath = msg.image_url.split('/chat-images/')[1] // パスを抽出
 
+console.log(msg.image_url)
+console.log(imagePath)
+
     if (imagePath) {
       const { error: deleteError } = await supabase
         .storage
