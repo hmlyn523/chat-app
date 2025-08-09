@@ -2,10 +2,10 @@
           "version": "0.2.0",
           "configurations": [
             {
-              "name": "Next.js: debug server-side",
+              "name": "Next.js: debug server-side (yarn)",
               "type": "node-terminal",
               "request": "launch",
-              "command": "npm run dev",
+              "command": "yarn dev",
               "cwd": "${workspaceFolder}"
             },
             {
@@ -18,10 +18,10 @@
               "break_on_load": true
             },
             {
-              "name": "Next.js: debug full stack",
+              "name": "Next.js: debug full stack (yarn)",
               "type": "node-terminal",
               "request": "launch",
-              "command": "npm run dev",
+              "command": "yarn dev",
               "cwd": "${workspaceFolder}",
               "console": "integratedTerminal",
               "serverReadyAction": {
