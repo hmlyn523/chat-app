@@ -417,6 +417,7 @@ export default function ChatRoom() {
         }
 
         fetchUser()
+        safeScrollToBottom(messagesEndRef)
     }, [])
 
     // メッセージ送信
