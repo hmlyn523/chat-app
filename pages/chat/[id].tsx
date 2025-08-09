@@ -543,7 +543,7 @@ export default function ChatRoom() {
                         id="image-upload"
                     />
                     <label htmlFor="image-upload" className="cursor-pointer px-2 text-blue-500">
-                        📷
+                        ＋
                     </label>
                     {/* 入力フォーム */}
                     <input
@@ -558,7 +558,7 @@ export default function ChatRoom() {
                         onClick={sendMessage}
                         className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
                         >
-                        send
+                        Send
                     </button>
                 </div>
             </div>
