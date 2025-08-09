@@ -7,6 +7,8 @@ import weekday from 'dayjs/plugin/weekday'
 import localeData from 'dayjs/plugin/localeData'
 import 'dayjs/locale/ja'
 
+import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from '../services/userService'
+
 dayjs.extend(weekday)
 dayjs.extend(localeData)
 dayjs.locale('ja')
@@ -57,33 +59,6 @@ export default function ChatRoom() {
         const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
         if (container) {
             container.scrollTop = container.scrollHeight
-        }
-    }
-
-    // チャットルームのメンバー一覧を取得
-    const fetchMembers = async () => {
-        const { data, error } = await supabase
-            .from('chat_members')
-            .select('user_id, users(email, user_profiles(nickname))')
-            .eq('chat_id', chatId)
-
-        if (error) {
-            console.error('メンバー取得失敗:', error)
-        } else {
-            setMembers(data || [])
-        }
-    }
-
-    // 全ユーザーを取得（未参加者を表示するため）
-    const fetchUsers = async () => {
-        const { data, error } = await supabase
-            .from('users')
-            .select('id, email')
-        if (error) {
-            console.error('ユーザー一覧取得失敗:', error)
-        } else {
-            // 招待できるユーザー一覧を表示するために使用
-            setAllUsers(data || [])
         }
     }
 
@@ -170,61 +145,13 @@ export default function ChatRoom() {
             currentUserIdRef.current = currentUserId
         }
 
-        // メッセージ一覧と既読処理
-        const fetchMessagesAndMarkRead = async () => {
-            // ここで現在のユーザー情報を取得しているが、setCurrentUserId が遅れて効くことがあるため、
-            // 先に user.id を変数として使う。
-            const { data: userResponse } = await supabase.auth.getUser()
-            const user = userResponse?.user
-            if (!user) return
-
-             setCurrentUserId(user.id)
-
-            // メッセージ本体の取得と既読登録
-            // messages テーブルから取得: 指定されたチャットIDのメッセージをすべて取得
-            // users ( email ): ユーザーIDに紐づくメールアドレスも取得（JOIN）
-            // markMessagesAsRead: 取得したメッセージを「既読」として登録
-            const { data, error } = await supabase
-            .from('messages')
-                .select(`
-                    id,
-                    content,
-                    user_id,
-                    created_at,
-                    image_url,
-                    users (
-                        email,
-                        user_profiles (
-                            nickname
-                        )
-                    ),
-                    message_reads (
-                        user_id
-                    )
-                `)
-            .eq('chat_id', chatId)
-            .order('created_at', { ascending: true })
-
-            if (error) {
-                console.error(error)
-            } else {
-                setMessages(data || [])
-
-                // 描画が終わるまで待ってから瞬時に一番下へ
-                // setTimeout(() => {
-                //     scrollToBottom('auto')
-                // }, 0)
-                // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
-                // 表示したメッセージのIDだけ既読登録
-                const messageIds = (data || []).map((m) => m.id)
-                // 取得したメッセージを「既読」として登録
-                await markMessagesAsRead(messageIds, user.id)
-            }
-        }
-
-        fetchMessagesAndMarkRead()
-        fetchMembers()
+        fetchMessagesAndMarkRead(chatId, setMessages, setCurrentUserId)
+        fetchMembers(chatId)
+            .then(setMembers)
+            .catch(console.error)
         fetchUsers()
+            .then(setAllUsers)
+            .catch(console.error)
 
         // リアルタイム購読
         const messageChannel = supabase
@@ -377,8 +304,11 @@ export default function ChatRoom() {
         }
 
         const handleScroll = () => {
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 20
-            isAtBottomRef.current = isAtBottom
+            const sum = container.scrollHeight - container.scrollTop - container.clientHeight;
+            console.log('スクロール位置:', sum, '高さ:', container.scrollHeight, 'クライアント高さ:', container.clientHeight, 'ddd', container.scrollTop);
+            const isAtBottom = sum < 20;
+            
+            isAtBottomRef.current = isAtBottom;
 
             // 👇 スクロールで下に着いたら未読メッセージを既読にする（オプション）
             if (
@@ -447,10 +377,9 @@ export default function ChatRoom() {
     // )
 
     return (
-        <div className="pt-16 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
-
+        <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-red-100" style={{ height: '100dvh' }}>
             {/* メッセージ一覧：スクロール対象 */}
-            <div className="overflow-y-auto px-4 py-2 space-y-2" style={{ height: 'calc(100dvh - 64px - 60px)' }}>
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-white">
                    {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
@@ -533,7 +462,7 @@ export default function ChatRoom() {
             </div>
 
             {/* 固定フッター(入力欄 + 送信ボタン) */}
-            <div className="fixed bottom-0 left-0 right-0 p-2 bg-white border-t z-10 touch-none overscroll-contain">
+            <div className="fixed bottom-0 left-0 right-0 p-3 bg-white border-t z-10 touch-none overscroll-contain">
                 <div className="flex items-center gap-2">
                     {/* 画像選択ボタン */}
                     <input
