@@ -446,11 +446,11 @@ export default function ChatRoom() {
     // )
 
     return (
-        <div className="pt-16 pb-20 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
+        <div className="pt-16 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
 
             {/* メッセージ一覧：スクロール対象 */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-                {messages.map((msg, index) => {
+            <div className="overflow-y-auto px-4 py-2 space-y-2" style={{ height: 'calc(100dvh - 64px - 60px)' }}>
+                   {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
                     const timeText = dayjs(msg.created_at).format('HH:mm')
