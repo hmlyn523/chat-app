@@ -46,10 +46,10 @@ export default function ChatRoom() {
         ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
         setTimeout(() => {
             requestAnimationFrame(() => {
-                ref.current?.scrollIntoView({ behavior: 'auto' })
+                ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
             })
             forceScrollToBottom()
-        }, 300)
+        }, 500)
         ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
     }
 
