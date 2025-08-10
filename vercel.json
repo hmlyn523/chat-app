@@ -3,7 +3,6 @@
     {
       "path": "/api/cleanup-old-messages",
       "schedule": "0 9 * * *",
-      "method": "POST"
     }
   ]
 }
