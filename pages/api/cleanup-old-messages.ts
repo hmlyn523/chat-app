@@ -8,7 +8,7 @@ const supabase = createClient(
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST' && req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ error: 'Method not allowed', method: req.method })
   }
 
   const cutoff = dayjs().subtract(24, 'hour').toISOString()
