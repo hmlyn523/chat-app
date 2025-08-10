@@ -7,7 +7,7 @@ import weekday from 'dayjs/plugin/weekday'
 import localeData from 'dayjs/plugin/localeData'
 import 'dayjs/locale/ja'
 
-import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from '../services/userService'
+import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from '../../lib/userService'
 import { useSafeScroll } from '../../lib/hooks/safeScrollToBottom'
 
 dayjs.extend(weekday)
