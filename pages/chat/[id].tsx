@@ -8,6 +8,7 @@ import localeData from 'dayjs/plugin/localeData'
 import 'dayjs/locale/ja'
 
 import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from '../services/userService'
+import { useSafeScroll } from '../../lib/hooks/safeScrollToBottom'
 
 dayjs.extend(weekday)
 dayjs.extend(localeData)
@@ -31,8 +32,6 @@ export default function ChatRoom() {
 
     // useRef: DOM要素（スクロール位置）や変数（ユーザーID）の最新値の保持に使用
 
-    const messagesEndRef = useRef<HTMLDivElement>(null) // スクロール位置の管理用
-
     const [currentUserId, setCurrentUserId] = useState<string | null>(null) // 自分のユーザーID
     const currentUserIdRef = useRef<string | null>(null) // 常に最新のユーザーIDを保持
 
@@ -41,19 +40,7 @@ export default function ChatRoom() {
 
     const isAtBottomRef = useRef(true)
 
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
-
-    const safeScrollToBottom = (ref: React.RefObject<HTMLDivElement | null>) => {
-        if (!ref.current) return
-        ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
-        setTimeout(() => {
-            requestAnimationFrame(() => {
-                ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
-            })
-            forceScrollToBottom()
-        }, 500)
-        ref.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
-    }
+    const { endRef, scrollToBottom } = useSafeScroll()
 
     const forceScrollToBottom = () => {
         const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement
@@ -133,7 +120,7 @@ export default function ChatRoom() {
 
         if (messages.length > 0 && !didInitialScrollRef.current) {
             setTimeout(() => {
-                safeScrollToBottom(messagesEndRef)
+                scrollToBottom()
                 didInitialScrollRef.current = true
             }, 100)
         }
@@ -210,24 +197,20 @@ export default function ChatRoom() {
                         if (shouldScroll) {
                             // 自分のメッセージ or 画面下にいるときだけスクロール
                             requestAnimationFrame(() => {
-                                safeScrollToBottom(messagesEndRef)
+                                scrollToBottom()
                             })
                         }
 
                         // 自分の投稿ならスクロール
                         if (newMessage.user_id === currentUserId ||
                             newMessage.user_id === currentUserIdRef.current) {
-                            setTimeout(() => safeScrollToBottom(messagesEndRef), 100)
+                            setTimeout(() => scrollToBottom(), 100)
                         }
 
                         return updated
                     })
 
                     const currentUserId = currentUserIdRef.current
-                    // if (currentUserId && newMessage.user_id !== currentUserId) {
-                    //     await markMessagesAsRead([newMessage.id], currentUserId)
-                    //     // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
-                    // }
                     if (
                         currentUserId &&
                         newMessage.user_id !== currentUserId &&
@@ -235,9 +218,7 @@ export default function ChatRoom() {
                     ) {
                         await markMessagesAsRead([newMessage.id], currentUserId)
                     }
-                    // scrollToBottom()
-                    // setTimeout(() => safeScrollToBottom(messagesEndRef, 'auto'), 100)
-                }
+               }
             )
             .subscribe()
 
@@ -252,7 +233,6 @@ export default function ChatRoom() {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'message_reads'
-                    // filter: `message_id=in.(${messages.map((m) => `'${m.id}'`).join(',')})`
                 },
                 async (payload) => {
                     const read = payload.new
@@ -298,7 +278,7 @@ export default function ChatRoom() {
         if (messages.length > 0 && !didInitialScrollRef.current) {
             // レンダリング完了後のタイミングでスクロール（DOM準備が確実になる）
             requestAnimationFrame(() => {
-                safeScrollToBottom(messagesEndRef)
+                scrollToBottom()
                 didInitialScrollRef.current = true
             })
         }
@@ -347,8 +327,13 @@ export default function ChatRoom() {
         }
 
         fetchUser()
-        safeScrollToBottom(messagesEndRef)
+        scrollToBottom()
     }, [])
+
+    // メッセージが更新されたら下にスクロール
+    useEffect(() => {
+        scrollToBottom()
+    }, [messages, scrollToBottom])
 
     // メッセージ送信
     const sendMessage = async () => {
@@ -372,14 +357,11 @@ export default function ChatRoom() {
     const unjoinedUsers = allUsers.filter(
         (u) => !members.find((m) => m.user_id === u.id)
     )
-    // const myFriends = allUsers.filter(
-    //     (u) => acceptedFriendIds.includes(u.id)
-    // )
-
+    
     return (
         <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-red-100" style={{ height: '100dvh' }}>
             {/* メッセージ一覧：スクロール対象 */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-white">
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-white" style={{ overflowY: "auto" }}>
                    {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
@@ -458,7 +440,7 @@ export default function ChatRoom() {
                         </div>
                     )
                 })}
-                <div ref={messagesEndRef} />
+                <div ref={endRef} />
             </div>
 
             {/* 固定フッター(入力欄 + 送信ボタン) */}
