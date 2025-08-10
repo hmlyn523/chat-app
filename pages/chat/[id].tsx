@@ -356,7 +356,7 @@ export default function ChatRoom() {
     return (
         <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-red-100" style={{ height: '100dvh' }}>
             {/* メッセージ一覧：スクロール対象 */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-white" style={{ overflowY: "auto" }}>
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-sky-100" style={{ overflowY: "auto" }}>
                    {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
@@ -397,8 +397,8 @@ export default function ChatRoom() {
                                         className={`
                                         px-4 py-2 text-sm break-words
                                         ${isMine
-                                            ? 'bg-blue-500 text-white rounded-xl rounded-br-none'
-                                            : 'bg-gray-200 text-gray-800 rounded-xl rounded-bl-none shadow'}
+                                            ? 'bg-cyan-400 text-gray-800 rounded-xl rounded-br-none border-2 border-black shadow-2xl'
+                                            : 'bg-yellow-200 text-gray-800 rounded-xl rounded-tl-none border-2 border-black shadow-2xl'}
                                         `}
                                     >
                                         {/* テキストがある場合は表示 */}
@@ -423,7 +423,6 @@ export default function ChatRoom() {
                                         </div>
                                     )}
                                     </div>
-
                                 </div>
                             </div>
                         </div>
@@ -433,7 +432,7 @@ export default function ChatRoom() {
             </div>
 
             {/* 固定フッター(入力欄 + 送信ボタン) */}
-            <div className="fixed bottom-0 left-0 right-0 p-3 bg-white border-t z-10 touch-none overscroll-contain">
+            <div className="fixed bottom-0 left-0 right-0 p-3 bg-sky-200 border-t z-10 touch-none overscroll-contain">
                 <div className="flex items-center gap-2">
                     {/* 画像選択ボタン */}
                     <input
@@ -443,23 +442,23 @@ export default function ChatRoom() {
                         className="hidden"
                         id="image-upload"
                     />
-                    <label htmlFor="image-upload" className="cursor-pointer px-2 text-blue-500">
-                        ＋
+                    <label htmlFor="image-upload" className="bg-sky-200 text-white rounded-full px-2 px-2 hover:bg-blue-600">
+                        📸
                     </label>
                     {/* 入力フォーム */}
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder="Enter message..."
-                        className="flex-1 border rounded-full px-4 py-2 focus:outline-none"
+                        placeholder="Message..."
+                        className="flex-1 border bg-sky-100 rounded-full px-4 py-2 focus:outline-none"
                         />
                     {/* 送信ボタン */}
                     <button
                         onClick={sendMessage}
-                        className="bg-blue-500 text-white rounded-full px-4 py-2 hover:bg-blue-600"
+                        className="bg-sky-200 text-white rounded-full px-4 py-2 hover:bg-sky-200"
                         >
-                        Send
+                        🖋️
                     </button>
                 </div>
             </div>
