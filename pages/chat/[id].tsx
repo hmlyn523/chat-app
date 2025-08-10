@@ -312,7 +312,7 @@ export default function ChatRoom() {
 
         container.addEventListener('scroll', handleScroll)
         return () => container.removeEventListener('scroll', handleScroll)
-    }, [messages])
+    }, [messages, scrollToBottom])
 
     // 初回のみ呼ばれる
     useEffect(() => {
@@ -329,11 +329,6 @@ export default function ChatRoom() {
         fetchUser()
         scrollToBottom()
     }, [])
-
-    // メッセージが更新されたら下にスクロール
-    useEffect(() => {
-        scrollToBottom()
-    }, [messages, scrollToBottom])
 
     // メッセージ送信
     const sendMessage = async () => {
