@@ -413,23 +413,17 @@ export default function ChatRoom() {
                                             />
                                         )}
                                     </div>
-                                    
-                                    {/* 追加: 時間表示 */}
-                                    <div
-                                    className={`text-[10px] mt-1 ${
-                                        isMine ? 'text-right text-gray-500' : 'text-left text-gray-500 ml-2'
-                                    }`}
-                                    >
-                                        {timeText}
-                                    </div>
 
-                                    {/* 👇 既読表示を追加（自分の投稿のみ） */}
+                                    {/* 追加: 時間表示 + 既読表示（自分の投稿のみ）を1行で */}
+                                    <div className={`flex items-center text-[10px] mt-1 ${isMine ? 'justify-end text-gray-500' : 'justify-start text-gray-500 ml-2'}`}>
+                                    <div>{timeText}</div>
                                     {isMine && (
-                                        <div className="text-xs text-right mt-1 text-gray-500">
-                                            {readCount === totalOtherMembers
-                                            ? 'read' : ''}
+                                        <div className="ml-2 text-gray-500">
+                                        {readCount === totalOtherMembers ? 'read' : ''}
                                         </div>
                                     )}
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
