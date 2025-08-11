@@ -34,6 +34,7 @@ export default function ChatRoom() {
 
     const [currentUserId, setCurrentUserId] = useState<string | null>(null) // 自分のユーザーID
     const currentUserIdRef = useRef<string | null>(null) // 常に最新のユーザーIDを保持
+    const inputRef = useRef<HTMLInputElement>(null) // ★この行を追加★
 
     // 初回のみフラグ
     const didInitialScrollRef = useRef(false)
@@ -344,8 +345,21 @@ export default function ChatRoom() {
         if (error) {
             alert('メMessage sending failed.')
         } else {
+            // 入力フィールドをクリアする
             setInput('')
             didInitialScrollRef.current = false
+
+            // メッセージが正常に送信された後、すぐにフォーカスを戻す
+            // これにより、キーボードが閉じられずに次の入力を受け付けられる
+            if (inputRef.current) {
+                inputRef.current.focus()
+            }
+
+            // スクロール処理を次のフレームにずらす
+            // フォーカスが戻った後、キーボードが完全に表示された状態でスクロール
+            requestAnimationFrame(() => {
+                scrollToBottom()
+            })
         }
     }
 
@@ -357,7 +371,7 @@ export default function ChatRoom() {
         <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-red-100" style={{ height: '100dvh' }}>
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-sky-100" style={{ overflowY: "auto" }}>
-                   {messages.map((msg, index) => {
+                    {messages.map((msg, index) => {
                     const isMine = msg.user_id === currentUserId
                     const name = msg.users?.user_profiles?.nickname ?? msg.users?.email ?? msg.user_id
                     const timeText = dayjs(msg.created_at).format('HH:mm')
@@ -448,18 +462,19 @@ export default function ChatRoom() {
                     {/* 入力フォーム */}
                     <input
                         type="text"
+                        ref={inputRef}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Message..."
                         className="flex-1 border bg-sky-100 rounded-full px-4 py-2 focus:outline-none"
                         />
                     {/* 送信ボタン */}
-                    <button
+                    <input
+                        tabIndex={-1}
+                        value="🖋️"
                         onClick={sendMessage}
-                        className="bg-sky-200 text-white rounded-full px-4 py-2 hover:bg-sky-200"
-                        >
-                        🖋️
-                    </button>
+                        className="bg-sky-300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-sky-400 w-12"
+                    />
                 </div>
             </div>
         </div>
