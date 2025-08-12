@@ -23,6 +23,8 @@ export default function App({
     const isChatRoom = pathname?.startsWith('/chat/')
 
     useEffect(() => {
+      if (typeof window === "undefined") return; // SSRガード
+      
       async function register() {
         const token = await requestPermissionAndGetToken();
         if (!token) return;
