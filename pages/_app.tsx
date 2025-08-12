@@ -16,6 +16,9 @@ function FCMRegistration() {
   const router = useRouter()
 
   useEffect(() => {
+    alert('FCMRegistration useEffect called');
+    console.log('FCMRegistration useEffect called, user:', user);
+
     if (typeof window === "undefined") return
     let isMounted = true; // アンマウント検知用
     let alreadyRegistered = false; // 二重登録防止用
