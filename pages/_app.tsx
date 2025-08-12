@@ -23,21 +23,25 @@ export default function App({
     const isChatRoom = pathname?.startsWith('/chat/')
 
     useEffect(() => {
-      if (typeof window === "undefined") return; // SSRガード
-      
-      async function register() {
+      if (typeof window === "undefined") return; // SSR回避
+
+      async function registerFCM() {
+        // SSRで評価されないように遅延import
+        const { requestPermissionAndGetToken } = await import("../lib/firebase-messaging");
+
         const token = await requestPermissionAndGetToken();
         if (!token) return;
 
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           await supabase.from("push_tokens").upsert({
-          user_id: user.id,
-          fcm_token: token,
+            user_id: user.id,
+            fcm_token: token,
           });
         }
       }
-      register();
+
+      registerFCM();
     }, []);
 
     return (

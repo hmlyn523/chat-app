@@ -53,9 +53,8 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
  * フォアグラウンドでの通知受信リスナー
  */
 export function onMessageListener() {
-  if (!messaging) return;
+  if (typeof window === "undefined" || !messaging) return;
   onMessage(messaging, (payload) => {
     console.log("Message received. ", payload);
-    // ここでアプリUIに通知を表示したりする
   });
 }
