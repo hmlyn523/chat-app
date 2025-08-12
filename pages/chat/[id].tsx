@@ -79,34 +79,86 @@ export default function ChatRoom() {
         const user = userResponse.user
         if (!user) return
 
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}_${user.id}.${fileExt}`
-        const filePath = `${chatId}/${fileName}`
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${Date.now()}_${user.id}.${fileExt}`
+            const filePath = `${chatId}/${fileName}`
 
-        const { error: uploadError } = await supabase.storage
-            .from('chat-images')
-            .upload(filePath, file)
+            // 1. ファイルをアップロード
+            const { error: uploadError } = await supabase.storage
+                .from('chat-images')
+                .upload(filePath, file)
 
-        if (uploadError) {
-            alert('Image upload failed.')
-            return
-        }
+            if (uploadError) {
+                alert('Image upload failed.')
+                return
+            }
 
-        const { data: urlData } = supabase.storage
-            .from('chat-images')
-            .getPublicUrl(filePath)
+            const { data: urlData } = supabase.storage
+                .from('chat-images')
+                .getPublicUrl(filePath)
 
-        const imageUrl = urlData?.publicUrl
-        if (!imageUrl) return
+            const imageUrl = urlData?.publicUrl
+            if (!imageUrl) return
 
-        const { error: insertError } = await supabase
-            .from('messages')
-            .insert([{ chat_id: chatId, user_id: user.id, image_url: imageUrl }])
+            // 2. メッセージをDBに保存
+            const { error: insertError } = await supabase
+                .from('messages')
+                .insert([{ chat_id: chatId, user_id: user.id, image_url: imageUrl }])
 
-        if (insertError) {
-            alert('Failed to send message with image.')
-        } else {
+            if (insertError) {
+                alert('Failed to send message with image.')
+                return
+            }
+
+            // 3. 送信者の情報を取得（通知用）
+            const { data: senderData } = await supabase
+                .from('users')
+                .select(`
+                    email,
+                    user_profiles ( nickname )
+                `)
+                .eq('id', user.id)
+                .single()
+
+            const senderName = (senderData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
+
+            // 4. チャット参加者の中から自分以外のユーザーにプッシュ通知を送信
+            const otherMembers = members.filter(member => member.user_id !== user.id)
+            
+            const pushPromises = otherMembers.map(async (member) => {
+                try {
+                    const response = await fetch('/api/sendPush', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: member.user_id,
+                            title: senderName,
+                            body: '📷 画像を送信しました',
+                            data: {
+                                chatRoomId: chatId,
+                                senderId: user.id,
+                            }
+                        }),
+                    })
+
+                    if (!response.ok) {
+                        console.error(`Failed to send push to ${member.user_id}:`, await response.text())
+                    }
+                } catch (pushError) {
+                    console.error(`Error sending push to ${member.user_id}:`, pushError)
+                }
+            })
+
+            await Promise.allSettled(pushPromises)
+
             didInitialScrollRef.current = false
+
+        } catch (error) {
+            console.error('Error in handleFileUpload:', error)
+            alert('画像の送信に失敗しました。')
         }
     }
 
@@ -339,13 +391,65 @@ export default function ChatRoom() {
         const user = userResponse.data?.user
         if (!user) return
 
-        const { error } = await supabase
-            .from('messages')
-            .insert([{ chat_id: chatId, user_id: user.id, content: input }])
-        if (error) {
-            alert('メMessage sending failed.')
-        } else {
-            // 入力フィールドをクリアする
+        try {
+            // 1. メッセージをDBに保存
+            const { error } = await supabase
+                .from('messages')
+                .insert([{ chat_id: chatId, user_id: user.id, content: input }])
+            
+            if (error) {
+                alert('Message sending failed.')
+                return
+            }
+
+            // 2. 送信者の情報を取得（通知用）
+            const { data: senderData } = await supabase
+                .from('users')
+                .select(`
+                    email,
+                    user_profiles ( nickname )
+                `)
+                .eq('id', user.id)
+                .single()
+
+            const senderName = (senderData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
+
+            // 3. チャット参加者の中から自分以外のユーザーにプッシュ通知を送信
+            const otherMembers = members.filter(member => member.user_id !== user.id)
+            
+            // 各メンバーに並行してプッシュ通知を送信
+            const pushPromises = otherMembers.map(async (member) => {
+                try {
+                    const response = await fetch('/api/sendPush', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userId: member.user_id,
+                            title: senderName,
+                            body: input.length > 50 ? input.substring(0, 50) + '...' : input,
+                            data: {
+                                chatRoomId: chatId, // 通知クリック時にこのチャットルームに遷移
+                                senderId: user.id,
+                            }
+                        }),
+                    })
+
+                    if (!response.ok) {
+                        console.error(`Failed to send push to ${member.user_id}:`, await response.text())
+                    } else {
+                        console.log(`Push notification sent to ${member.user_id}`)
+                    }
+                } catch (pushError) {
+                    console.error(`Error sending push to ${member.user_id}:`, pushError)
+                }
+            })
+
+            // プッシュ通知の結果を待つ（エラーがあっても続行）
+            await Promise.allSettled(pushPromises)
+
+            // 4. UI処理（従来通り）
             setInput('')
             didInitialScrollRef.current = false
 
@@ -360,8 +464,13 @@ export default function ChatRoom() {
             requestAnimationFrame(() => {
                 scrollToBottom()
             })
+
+        } catch (error) {
+            console.error('Error in sendMessage:', error)
+            alert('メッセージの送信に失敗しました。')
         }
-    }
+    }    
+
 
     const unjoinedUsers = allUsers.filter(
         (u) => !members.find((m) => m.user_id === u.id)
