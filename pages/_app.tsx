@@ -23,22 +23,19 @@ export default function App({
     const isChatRoom = pathname?.startsWith('/chat/')
 
     useEffect(() => {
-      async function registerToken() {
-      const token = await requestPermissionAndGetToken();
-      if (!token) return;
+      async function register() {
+        const token = await requestPermissionAndGetToken();
+        if (!token) return;
 
-      // Supabaseのユーザーテーブル or push_subscriptionsテーブルにtokenを保存
-      const { data: user } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // 例: push_tokensテーブルにupsert
-      await supabase.from('push_tokens').upsert({
-        user_id: user.user?.id,
-        fcm_token: token,
-      });
-    }
-
-    registerToken();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("push_tokens").upsert({
+          user_id: user.id,
+          fcm_token: token,
+          });
+        }
+      }
+      register();
     }, []);
 
     return (
