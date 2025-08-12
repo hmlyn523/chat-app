@@ -10,6 +10,10 @@ import ChatHeader from '../components/ChatHeader'
 import ListHeader from '../components/ListHeader'
 import { usePathname } from 'next/navigation';
 
+import { useEffect } from 'react';
+import { requestPermissionAndGetToken } from '../lib/firebase-messaging';
+import { supabase } from '../lib/supabaseClient';
+
 export default function App({
     Component,
     pageProps,
@@ -17,6 +21,25 @@ export default function App({
     const [supabaseClient] = useState(() => createPagesBrowserClient())
     const pathname = usePathname()
     const isChatRoom = pathname?.startsWith('/chat/')
+
+    useEffect(() => {
+      async function registerToken() {
+      const token = await requestPermissionAndGetToken();
+      if (!token) return;
+
+      // Supabaseのユーザーテーブル or push_subscriptionsテーブルにtokenを保存
+      const { data: user } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 例: push_tokensテーブルにupsert
+      await supabase.from('push_tokens').upsert({
+        user_id: user.user?.id,
+        fcm_token: token,
+      });
+    }
+
+    registerToken();
+    }, []);
 
     return (
     <SessionContextProvider
