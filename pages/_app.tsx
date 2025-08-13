@@ -13,64 +13,41 @@ import { supabase } from '../lib/supabaseClient';
 // FCM登録を行うコンポーネント
 function FCMRegistration() {
   const user = useUser();
-  const router = useRouter();
-  const alreadyRegisteredRef = useRef(false);
+  const hasRegisteredRef = useRef(false);
 
   useEffect(() => {
-    console.log('FCMRegistration useEffect called, user:', user);
-
+    // SSRでは実行しない
     if (typeof window === 'undefined') return;
-    if (alreadyRegisteredRef.current) return; // すでに登録済みなら終了
-    alreadyRegisteredRef.current = true;
-    let isMounted = true; // アンマウント検知用
-    let alreadyRegistered = false; // 二重登録防止用
+
+    // ユーザーが未ログインの場合はスキップ
+    if (!user) return;
+
+    // すでに登録済みならスキップ（Strict Mode対応）
+    if (hasRegisteredRef.current) return;
+    hasRegisteredRef.current = true;
 
     async function registerFCM() {
-      if (alreadyRegistered) return;
-      alreadyRegistered = true;
-
       try {
-        // ユーザーがログインしていない場合はスキップ
-        if (!user) {
-          console.log('User not logged in, skipping FCM registration');
-          return;
-        }
-
-        console.log('Starting FCM registration for user:', user.id);
-
         // 動的importを使用してSSRを回避
-        const { requestPermissionAndGetToken } = await import('../lib/firebase-messaging');
+        const { requestPermissionAndGetToken, onMessageListener } = await import(
+          '../lib/firebase-messaging'
+        );
 
+        // 通知許可とトークン取得
         const token = await requestPermissionAndGetToken();
-        if (!token) {
-          console.log('Failed to get FCM token');
-          return;
-        }
-
-        if (!isMounted) return; // アンマウントされていたら中断
+        if (!token) return;
 
         console.log('FCM token obtained:', token.substring(0, 20) + '...');
 
         // トークンをDBに保存
-        const { error } = await supabase.from('push_tokens').upsert({
-          user_id: user.id,
+        await supabase.from('push_tokens').upsert({
+          user_id: user?.id,
           fcm_token: token,
         });
 
-        if (error) {
-          console.error('Failed to save FCM token:', error);
-        } else {
-          console.log('FCM token saved successfully for user:', user.id);
-        }
-
-        // フォアグラウンド通知のリスナーも設定
-        const { onMessageListener } = await import('../lib/firebase-messaging');
+        // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
-          if (!isMounted) return;
-          console.log('Foreground message received:', payload);
-
-          // フォアグラウンドでの通知表示（オプション）
-          if (payload.notification && 'Notification' in window) {
+          if (payload.notification) {
             new Notification(payload.notification.title || '新しいメッセージ', {
               body: payload.notification.body || '',
               icon: '/icons/icon-192.png',
