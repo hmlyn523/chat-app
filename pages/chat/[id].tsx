@@ -477,7 +477,7 @@ export default function ChatRoom() {
     )
     
     return (
-        <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-red-100" style={{ height: '100dvh' }}>
+        <div className="pt-16 pb-16 flex flex-col overflow-hidden bg-sky-200" style={{ height: '100dvh' }}>
             {/* メッセージ一覧：スクロール対象 */}
             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-sky-100" style={{ overflowY: "auto" }}>
                     {messages.map((msg, index) => {
