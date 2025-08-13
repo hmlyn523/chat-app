@@ -1,3 +1,5 @@
 {
-  "typescript.tsserver.exclude": ["**/node_modules"]
+  "typescript.tsserver.exclude": ["**/node_modules"],
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
