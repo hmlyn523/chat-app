@@ -411,6 +411,7 @@ export default function ChatRoom() {
                 `)
                 .eq('id', user.id)
                 .single()
+            setInput('') // DBに書き込んだら入力欄をクリア
 
             const senderName = (senderData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
 
@@ -450,7 +451,6 @@ export default function ChatRoom() {
             await Promise.allSettled(pushPromises)
 
             // 4. UI処理（従来通り）
-            setInput('')
             didInitialScrollRef.current = false
 
             // メッセージが正常に送信された後、すぐにフォーカスを戻す
