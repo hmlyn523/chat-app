@@ -16,7 +16,6 @@ function FCMRegistration() {
   const router = useRouter()
 
   useEffect(() => {
-    alert('FCMRegistration useEffect called');
     console.log('FCMRegistration useEffect called, user:', user);
 
     if (typeof window === "undefined") return
@@ -57,10 +56,8 @@ function FCMRegistration() {
 
         if (error) {
           console.error('Failed to save FCM token:', error)
-          alert('プッシュ通知トークンの保存に失敗しました。エラー: ' + error.message);
         } else {
           console.log('FCM token saved successfully for user:', user.id)
-          alert('プッシュ通知トークンの保存に成功しました。');
         }
 
         // フォアグラウンド通知のリスナーも設定
@@ -80,7 +77,6 @@ function FCMRegistration() {
         })
       } catch (error) {
         console.error('Error in FCM registration:', error)
-        alert('予期しないエラーが発生しました。');
       }
     }
 
