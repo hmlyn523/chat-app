@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST') return res.status(405).end();
 
   const { userId, title, body, data } = req.body;
-  
+
   // バリデーション
   if (!userId || !title || !body) {
     console.error('Missing parameters:', { userId, title, body });
@@ -40,41 +40,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Found FCM token for user:', userId);
 
-    const message = {
+    const message: admin.messaging.Message = {
       token: tokenData.fcm_token,
-      notification: {
-        title,
-        body,
-      },
-      data: data ? {
-        chatRoomId: data.chatRoomId || '',
-        senderId: data.senderId || '',
-        // 他のカスタムデータがあれば追加
-        ...data
-      } : undefined,
-      // Android用の追加設定
+      // Android 用通知
       android: {
         notification: {
-          channelId: 'chat_messages', // Android用チャンネルID
-          priority: 'high' as const,
+          title,
+          body,
+          channelId: 'chat_messages', // 必要に応じて作成済みチャンネルID
+          priority: 'high',
           defaultSound: true,
         },
       },
-      // iOS用の追加設定
+      // iOS 用通知
       apns: {
         payload: {
           aps: {
+            alert: { title, body }, // 二重通知防止
             sound: 'default',
             badge: 1,
           },
         },
       },
+      // データだけ送りたい場合はここに
+      data: data || {},
     };
 
-    const response = await admin.messaging().send(message);
-    console.log('Push notification sent successfully:', response);
-    
-    res.status(200).json({ success: true, response });
+    try {
+      const response = await admin.messaging().send(message);
+      console.log('Successfully sent message:', response);
+      res.status(200).json({ success: true, response });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
   } catch (e) {
     console.error('Error sending push notification:', e);
     const errorMessage = e instanceof Error ? e.message : 'Unknown error';
