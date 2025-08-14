@@ -1,41 +1,92 @@
-import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import {
+  GoogleAuthProvider,
+  linkWithPopup,
+  signInWithPopup,
+  signInAnonymously,
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 export function AuthForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [nickname, setNickname] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleSignUp = async () => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-    })
+    });
 
     if (error) {
-      alert(error.message)
+      alert(error.message);
     } else {
       // サインアップ直後は確認メールが送られる。確認後にプロフィールを作成する必要があるが、
       // 今回は仮に自動で user_profiles にも追加しておく。
-      const user = data?.user
+      const user = data?.user;
       if (user) {
-        const { error: profileError } = await supabase.from('user_profiles').insert([
-          { user_id: user.id, nickname }
-        ])
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert([{ user_id: user.id, nickname }]);
         if (profileError) {
-          console.error('ニックネーム登録エラー:', profileError.message)
+          console.error('ニックネーム登録エラー:', profileError.message);
         }
       }
 
-      alert('We have sent you a sign-up confirmation email.')
+      alert('We have sent you a sign-up confirmation email.');
     }
-  }
+  };
 
   const handleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) alert(error.message)
-  }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+  };
+
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+
+    try {
+      if (auth.currentUser?.isAnonymous) {
+        // 匿名 → Google にアップグレード
+        await linkWithPopup(auth.currentUser, provider);
+      } else {
+        // 通常ログイン
+        await signInWithPopup(auth, provider);
+      }
+
+      // FirebaseユーザーをSupabaseに同期
+      const user = auth.currentUser;
+      if (user) {
+        await supabase.from('user_profiles').upsert({
+          user_id: user.uid,
+          nickname: user.displayName || '',
+        });
+      }
+      alert('Googleログイン成功！');
+    } catch (err) {
+      console.error(err);
+      alert('Googleログイン失敗');
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      await signInAnonymously(auth);
+      const user = auth.currentUser;
+      if (user) {
+        await supabase.from('user_profiles').upsert({
+          user_id: user.uid,
+          nickname: 'ゲスト',
+        });
+      }
+      alert('ゲストで開始しました！');
+    } catch (err) {
+      console.error(err);
+      alert('ゲストログイン失敗');
+    }
+  };
 
   return (
     <div className="max-w-sm mx-auto p-4 bg-white rounded shadow">
@@ -46,14 +97,14 @@ export function AuthForm() {
       <input
         type="email"
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={(e) => setEmail(e.target.value)}
         placeholder="Email address"
         className="w-full border p-2 mb-2 rounded"
       />
       <input
         type="password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
         className="w-full border p-2 mb-2 rounded"
       />
@@ -63,7 +114,7 @@ export function AuthForm() {
         <input
           type="text"
           value={nickname}
-          onChange={e => setNickname(e.target.value)}
+          onChange={(e) => setNickname(e.target.value)}
           placeholder="Nickname"
           className="w-full border p-2 mb-4 rounded"
         />
@@ -91,6 +142,22 @@ export function AuthForm() {
       >
         {isSignUp ? '> If you already have an account, click here.' : '> Click here to register'}
       </button>
+
+      {/* Googleでログイン */}
+      <button
+        onClick={handleGoogleLogin}
+        className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 mt-2"
+      >
+        Sign in with Google
+      </button>
+
+      {/* ゲストログイン */}
+      <button
+        onClick={handleGuestLogin}
+        className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600 mt-2"
+      >
+        Start as a guest
+      </button>
     </div>
-  )
+  );
 }

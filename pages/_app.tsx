@@ -9,11 +9,22 @@ import '../styles/globals.css';
 import ChatHeader from '../components/ChatHeader';
 import ListHeader from '../components/ListHeader';
 import { supabase } from '../lib/supabaseClient';
+import { auth } from '@/lib/firebase';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 // FCM登録を行うコンポーネント
 function FCMRegistration() {
   const user = useUser();
   const hasRegisteredRef = useRef(false);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // 未ログインなら匿名認証
+        signInAnonymously(auth).catch(console.error);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     // SSRでは実行しない
