@@ -1,11 +1,12 @@
 // services/userService.ts
-import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient';
 
 // メッセージ一覧を取得
 export async function fetchMessages(chatId: string) {
   const { data, error } = await supabase
     .from('messages')
-    .select(`
+    .select(
+      `
       id,
       content,
       user_id,
@@ -20,12 +21,13 @@ export async function fetchMessages(chatId: string) {
       message_reads (
         user_id
       )
-    `)
+    `
+    )
     .eq('chat_id', chatId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true });
 
-  if (error) throw error
-  return data || []
+  if (error) throw error;
+  return data || [];
 }
 
 // チャットルームのメンバー一覧を取得
@@ -33,28 +35,26 @@ export async function fetchMembers(chatId: string) {
   const { data, error } = await supabase
     .from('chat_members')
     .select('user_id, users(email, user_profiles(nickname))')
-    .eq('chat_id', chatId)
+    .eq('chat_id', chatId);
 
   if (error) {
-    console.error('メンバー取得失敗:', error)
-    throw error
+    console.error('メンバー取得失敗:', error);
+    throw error;
   }
 
-  return data || []
+  return data || [];
 }
 
 // ユーザー一覧を取得
 export async function fetchUsers() {
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, email')
+  const { data, error } = await supabase.from('users').select('id, email');
 
   if (error) {
-    console.error('ユーザー一覧取得失敗:', error)
-    throw error
+    console.error('ユーザー一覧取得失敗:', error);
+    throw error;
   }
 
-  return data || []
+  return data || [];
 }
 
 export async function fetchMessagesAndMarkRead(
@@ -62,32 +62,32 @@ export async function fetchMessagesAndMarkRead(
   setMessages: (msgs: any[]) => void,
   setCurrentUserId: (id: string) => void
 ) {
-  const { data: userResponse } = await supabase.auth.getUser()
-  const user = userResponse?.user
-  if (!user) return
+  const { data: userResponse } = await supabase.auth.getUser();
+  const user = userResponse?.user;
+  if (!user) return;
 
-  setCurrentUserId(user.id)
+  setCurrentUserId(user.id);
 
-  const messages = await fetchMessages(chatId)
-  setMessages(messages || [])
+  const messages = await fetchMessages(chatId);
+  setMessages(messages || []);
 
-  const messageIds = (messages || []).map((m) => m.id)
-  await markMessagesAsRead(messageIds, user.id)
+  const messageIds = (messages || []).map((m) => m.id);
+  await markMessagesAsRead(messageIds, user.id);
 }
 
 export async function markMessagesAsRead(messageIds: string[], userId: string) {
-  if (messageIds.length === 0) return
+  if (messageIds.length === 0) return;
 
   const inserts = messageIds.map((messageId) => ({
     message_id: messageId,
     user_id: userId,
-  }))
+  }));
 
   const { error } = await supabase
     .from('message_reads')
-    .upsert(inserts, { onConflict: 'message_id,user_id' })
+    .upsert(inserts, { onConflict: 'message_id,user_id' });
 
   if (error) {
-    console.error('既読登録失敗:', error)
+    console.error('既読登録失敗:', error);
   }
 }
