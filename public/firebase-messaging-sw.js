@@ -5,12 +5,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-comp
 
 // Firebase プロジェクト設定（直接値を記入）
 firebase.initializeApp({
-  apiKey: "AIzaSyDTjOeukQktTxnDPwfYSMs3XKuffhJmam0",
-  authDomain: "chat-app-aa72c.firebaseapp.com",
-  projectId: "chat-app-aa72c",
-  storageBucket: "chat-app-aa72c.firebasestorage.app",
-  messagingSenderId: "37904078789",
-  appId: "1:37904078789:web:d85259a03cf1fdcbb01dac",
+  apiKey: 'AIzaSyDTjOeukQktTxnDPwfYSMs3XKuffhJmam0',
+  authDomain: 'chat-app-aa72c.firebaseapp.com',
+  projectId: 'chat-app-aa72c',
+  storageBucket: 'chat-app-aa72c.firebasestorage.app',
+  messagingSenderId: '37904078789',
+  appId: '1:37904078789:web:d85259a03cf1fdcbb01dac',
 });
 
 const messaging = firebase.messaging();
@@ -26,7 +26,20 @@ messaging.onBackgroundMessage(function (payload) {
     data: payload.data || {},
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  event.waitUntil(
+    (async () => {
+      const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+      const msgChatId = payload.data?.chatId;
+      const isChatOpen = clientList.some((client) => client.url.includes(`/chat/${msgChatId}`));
+
+      if (!isChatOpen) {
+        self.registration.showNotification(notificationTitle, notificationOptions);
+      } else {
+        console.log('チャット画面開いているので通知スキップ');
+      }
+    })()
+  );
 });
 
 // 通知クリック時の遷移

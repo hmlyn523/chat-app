@@ -14,6 +14,7 @@ import { supabase } from '../lib/supabaseClient';
 function FCMRegistration() {
   const user = useUser();
   const hasRegisteredRef = useRef(false);
+  const router = useRouter(); // ✅ ルーターで現在のパスを取得
 
   useEffect(() => {
     // SSRでは実行しない
@@ -47,6 +48,16 @@ function FCMRegistration() {
 
         // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
+          // ✅ 現在のパスがチャット画面かどうか確認
+          const isChatPage = router.pathname.startsWith('/chat/');
+          const currentChatId = router.query.id; // /chat/[id] の場合
+
+          const msgChatId = payload.data?.chatId;
+
+          if (isChatPage && msgChatId === currentChatId) {
+            console.log('チャット画面開いているので通知スキップ:', payload);
+            return;
+          }
           if (payload.notification) {
             new Notification(payload.notification.title || '新しいメッセージ', {
               body: payload.notification.body || '',
@@ -61,7 +72,7 @@ function FCMRegistration() {
     }
 
     registerFCM();
-  }, [user]); // userの変更を監視
+  }, [user, router]); // userの変更を監視
 
   return null; // このコンポーネントは何もレンダリングしない
 }
