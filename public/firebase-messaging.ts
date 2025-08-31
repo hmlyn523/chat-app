@@ -1,6 +1,6 @@
 // lib/firebase-messaging.ts
-import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, getToken, onMessage, Messaging } from "firebase/messaging";
+import { initializeApp, getApps } from 'firebase/app';
+import { getMessaging, getToken, onMessage, Messaging } from 'firebase/messaging';
 
 let messaging: Messaging | null = null;
 
@@ -8,16 +8,16 @@ let messaging: Messaging | null = null;
  * 通知許可をリクエストして FCM トークンを取得
  */
 export async function requestPermissionAndGetToken(): Promise<string | null> {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     // SSR環境では何もしない
     return null;
   }
 
   // ✅ Service Worker を登録
-  const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js", {
-    scope: "/",
+  const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+    scope: '/',
   });
-  console.log("Service Worker registered:", registration);
+  console.log('Service Worker registered:', registration);
 
   const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -33,14 +33,14 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
   try {
     messaging = getMessaging(app);
   } catch (e) {
-    console.error("Failed to get messaging", e);
+    console.error('Failed to get messaging', e);
     return null;
   }
 
   // 通知許可をリクエスト
   const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    console.warn("Notification permission not granted");
+  if (permission !== 'granted') {
+    console.warn('Notification permission not granted');
     return null;
   }
 
@@ -51,7 +51,8 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
     });
     return token || null;
   } catch (err) {
-    console.error("An error occurred while retrieving token. ", err);
+    console.error('An error occurred while retrieving token. ', err);
+    alert('通知トークンの取得に失敗しました。\n' + 'ネットワークやVAPIDキーを確認してください。');
     return null;
   }
 }
@@ -60,8 +61,8 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
  * フォアグラウンドでの通知受信リスナー
  */
 export function onMessageListener() {
-  if (typeof window === "undefined" || !messaging) return;
+  if (typeof window === 'undefined' || !messaging) return;
   onMessage(messaging, (payload) => {
-    console.log("Message received. ", payload);
+    console.log('Message received. ', payload);
   });
 }
