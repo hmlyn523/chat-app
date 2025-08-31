@@ -52,7 +52,6 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
     return token || null;
   } catch (err) {
     console.error('An error occurred while retrieving token. ', err);
-    alert('通知トークンの取得に失敗しました。\n' + 'ネットワークやVAPIDキーを確認してください。');
     return null;
   }
 }

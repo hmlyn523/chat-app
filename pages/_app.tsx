@@ -39,15 +39,11 @@ function FCMRegistration() {
 
         console.log('FCM token obtained:', token.substring(0, 20) + '...');
 
-        alert('push_tokensテーブルにトークンを保存します');
-
         // トークンをDBに保存
         await supabase.from('push_tokens').upsert({
           user_id: user?.id,
           fcm_token: token,
         });
-
-        alert('push_tokensテーブルにトークンを保存しました');
 
         // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
