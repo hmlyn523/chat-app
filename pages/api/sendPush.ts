@@ -63,7 +63,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       },
       // データだけ送りたい場合はここに
-      data: data || {},
+      data: {
+        title,
+        body,
+        ...data,
+      },
     };
 
     try {
