@@ -26,60 +26,72 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('Sending push notification to user:', userId);
 
   try {
-    // DBから対象ユーザーのfcm_tokenを取得
-    const { data: tokenData, error } = await supabase
+    const { data: tokens, error } = await supabase
       .from('push_tokens')
       .select('fcm_token')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
-    if (error || !tokenData?.fcm_token) {
-      console.error('Token not found for user:', userId, error);
-      return res.status(404).json({ error: 'Token not found' });
+    if (error || !tokens?.length) {
+      console.error('No tokens found for user:', userId, error);
+      return res.status(404).json({ error: 'No tokens found' });
     }
-
-    console.log('Found FCM token for user:', userId);
 
     const stringifiedData = Object.fromEntries(
       Object.entries(data || {}).map(([k, v]) => [k, String(v)])
     );
 
-    const message: admin.messaging.Message = {
-      token: tokenData.fcm_token,
+    const registrationTokens = tokens.map((t) => t.fcm_token);
+
+    const message: admin.messaging.MulticastMessage = {
+      tokens: registrationTokens,
       notification: {
         title,
         body,
       },
-      // Android 用通知
+      data: stringifiedData,
       android: {
         notification: {
           title,
           body,
-          channelId: 'chat_messages', // 必要に応じて作成済みチャンネルID
+          channelId: 'chat_messages',
           priority: 'high',
           defaultSound: true,
         },
-        // Android固有のデータ設定
-        data: stringifiedData || {},
+        data: stringifiedData,
       },
-      // iOS 用通知
       apns: {
         payload: {
           aps: {
-            alert: { title, body }, // 二重通知防止
+            alert: { title, body },
             sound: 'default',
             badge: 1,
           },
-          // iOS固有のデータ設定
           ...stringifiedData,
         },
       },
     };
 
     try {
-      const response = await admin.messaging().send(message);
-      console.log('Successfully sent message:', response);
-      res.status(200).json({ success: true, response });
+      const response = await admin.messaging().sendEachForMulticast(message);
+      console.log('Successfully sent to devices:', response.successCount);
+      console.log('Failed to send to devices:', response.failureCount);
+
+      // 無効トークンの削除
+      const invalidTokens: string[] = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success && resp.error?.code === 'messaging/registration-token-not-registered') {
+          invalidTokens.push(registrationTokens[idx]);
+        }
+      });
+      if (invalidTokens.length > 0) {
+        await supabase.from('push_tokens').delete().in('fcm_token', invalidTokens);
+      }
+
+      return res.status(200).json({
+        success: true,
+        sent: response.successCount,
+        failed: response.failureCount,
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
