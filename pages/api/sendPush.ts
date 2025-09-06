@@ -42,6 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const message: admin.messaging.Message = {
       token: tokenData.fcm_token,
+      notification: {
+        title,
+        body,
+      },
       // Android 用通知
       android: {
         notification: {
