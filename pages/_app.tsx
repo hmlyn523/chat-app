@@ -9,6 +9,7 @@ import '../styles/globals.css';
 import ChatHeader from '../components/ChatHeader';
 import ListHeader from '../components/ListHeader';
 import { supabase } from '../lib/supabaseClient';
+import { listenForSWUpdate } from '../lib/serviceWorkerUpdater';
 
 // FCM登録を行うコンポーネント
 function FCMRegistration() {
@@ -110,6 +111,14 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
   const router = useRouter();
   const isChatRoom = router.pathname?.startsWith('/chat/');
 
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  useEffect(() => {
+    listenForSWUpdate(() => {
+      setUpdateAvailable(true);
+    });
+  }, []);
+
   return (
     <SessionContextProvider
       supabaseClient={supabaseClient}
@@ -117,6 +126,16 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
     >
       {/* FCM登録コンポーネント */}
       <FCMRegistration />
+
+      {/* PWA更新通知バー */}
+      {updateAvailable && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center space-x-2">
+          <span>新しいバージョンがあります</span>
+          <button onClick={() => window.location.reload()} className="underline font-semibold">
+            更新
+          </button>
+        </div>
+      )}
 
       {/* ヘッダー */}
       {
