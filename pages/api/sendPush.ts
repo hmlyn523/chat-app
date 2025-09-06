@@ -40,6 +40,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Found FCM token for user:', userId);
 
+    const stringifiedData = Object.fromEntries(
+      Object.entries(data || {}).map(([k, v]) => [k, String(v)])
+    );
+
     const message: admin.messaging.Message = {
       token: tokenData.fcm_token,
       notification: {
@@ -56,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           defaultSound: true,
         },
         // Android固有のデータ設定
-        data: data || {},
+        data: stringifiedData || {},
       },
       // iOS 用通知
       apns: {
@@ -67,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             badge: 1,
           },
           // iOS固有のデータ設定
-          ...data,
+          ...stringifiedData,
         },
       },
     };
