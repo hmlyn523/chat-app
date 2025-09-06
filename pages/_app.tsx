@@ -38,13 +38,41 @@ function FCMRegistration() {
         const token = await requestPermissionAndGetToken();
         if (!token) return;
 
-        console.log('FCM token obtained:', token.substring(0, 20) + '...');
+        // console.log('FCM token obtained:', token.substring(0, 20) + '...');
+
+        let deviceId = localStorage.getItem('device_id');
+        if (!deviceId) {
+          deviceId = crypto.randomUUID();
+          localStorage.setItem('device_id', deviceId);
+        }
+
+        let platform = 'web';
+        if (typeof window !== 'undefined') {
+          const ua = navigator.userAgent;
+          if (/iPhone|iPad|iPod/i.test(ua)) platform = 'ios';
+          else if (/Android/i.test(ua)) platform = 'android';
+        }
+        const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
         // トークンをDBに保存
-        await supabase.from('push_tokens').upsert({
-          user_id: user?.id,
-          fcm_token: token,
-        });
+        const { data, error } = await supabase.from('push_tokens').upsert(
+          {
+            user_id: user?.id,
+            device_id: deviceId,
+            fcm_token: token,
+            platform,
+            app_version: appVersion,
+            is_active: true,
+            created_at: new Date(),
+            last_used_at: new Date(),
+          },
+          {
+            onConflict: 'user_id,device_id',
+          }
+        );
+
+        if (error) console.error('Upsert error:', error);
+        else console.log('Upsert success:', data);
 
         // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
