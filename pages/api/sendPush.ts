@@ -51,6 +51,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           priority: 'high',
           defaultSound: true,
         },
+        // Android固有のデータ設定
+        data: data || {},
       },
       // iOS 用通知
       apns: {
@@ -60,13 +62,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sound: 'default',
             badge: 1,
           },
+          // iOS固有のデータ設定
+          ...data,
         },
-      },
-      // データだけ送りたい場合はここに
-      data: {
-        title,
-        body,
-        ...data,
       },
     };
 
