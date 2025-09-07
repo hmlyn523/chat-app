@@ -78,15 +78,14 @@ function FCMRegistration() {
         // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
           // ✅ 現在のパスがチャット画面かどうか確認
-          const isChatPage = router.pathname.startsWith('/chat/');
-          const currentChatId = router.query.id; // /chat/[id] の場合
+          const msgChatId = payload.data?.chatRoomId;
+          const isCurrentChat = window.location.pathname === `/chat/${msgChatId}`;
 
-          const msgChatId = payload.data?.chatId;
-
-          if (isChatPage && msgChatId === currentChatId) {
-            console.log('チャット画面開いているので通知スキップ:', payload);
+          if (isCurrentChat) {
+            console.log('現在のチャット画面なので通知スキップ:', payload);
             return;
           }
+
           if (payload.notification) {
             new Notification(payload.notification.title || '新しいメッセージ', {
               body: payload.notification.body || '',
