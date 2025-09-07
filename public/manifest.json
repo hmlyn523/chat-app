@@ -1,6 +1,6 @@
 {
-  "name": "My Chat App",
-  "short_name": "ChatApp",
+  "name": "Anonify 24h Chat",
+  "short_name": "24hChat",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
