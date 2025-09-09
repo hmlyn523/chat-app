@@ -31,12 +31,17 @@ function FCMRegistration() {
     async function registerFCM() {
       try {
         // 動的importを使用してSSRを回避
-        const { requestPermissionAndGetToken, onMessageListener } = await import(
+        const { requestPermissionAndGetToken, onMessageListener, getExistingToken } = await import(
           '../lib/firebase-messaging'
         );
 
         // 通知許可とトークン取得
-        const token = await requestPermissionAndGetToken();
+        let token: string | null = null;
+        if (Notification.permission === 'granted') {
+          token = await getExistingToken();
+        } else {
+          token = await requestPermissionAndGetToken();
+        }
         if (!token) return;
 
         // console.log('FCM token obtained:', token.substring(0, 20) + '...');

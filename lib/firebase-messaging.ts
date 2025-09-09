@@ -1,6 +1,6 @@
 // lib/firebase-messaging.ts
-import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { initializeApp, getApps } from 'firebase/app';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -33,4 +33,19 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
 
 export function onMessageListener(callback: (payload: any) => void) {
   onMessage(messaging, callback);
+}
+
+export async function getExistingToken(): Promise<string | null> {
+  try {
+    if (Notification.permission !== 'granted') {
+      return null;
+    }
+    const currentToken = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+    });
+    return currentToken || null;
+  } catch (err) {
+    console.error('An error occurred while retrieving token.', err);
+    return null;
+  }
 }
