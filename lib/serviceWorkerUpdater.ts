@@ -6,10 +6,18 @@ export function listenForSWUpdate(onUpdate: () => void) {
       window.location.reload();
     });
 
-    navigator.serviceWorker.ready.then((registration) => {
-      if (!registration || !registration.waiting) return;
-      // 新しい SW がある場合にコールバック
-      onUpdate();
-    });
+    // ページ開いたままでも定期的に更新チェック
+    setInterval(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) return;
+
+      // 新しい SW が waiting になっていればコールバック
+      if (registration.waiting) {
+        onUpdate();
+      } else {
+        // SW を更新チェック
+        registration.update();
+      }
+    }, 30 * 1000); // 30秒ごとにチェック（必要に応じて調整）
   }
 }
