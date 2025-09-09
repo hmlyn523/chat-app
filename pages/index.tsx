@@ -187,7 +187,7 @@ export default function Home() {
 
       <div className="space-y-3 pt-6 flex flex-col items-center">
         <button
-          className="w-5/6 bg-blue-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-700 transition"
+          className="w-5/6 bg-gray-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-gray-700 transition"
           onClick={() => router.push('/new-chat')}
         >
           ➕ Create chat

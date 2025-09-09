@@ -1,99 +1,99 @@
-import { useEffect, useState } from 'react'
-import { useUser } from '@supabase/auth-helpers-react'
-import { supabase } from '../lib/supabaseClient'
-import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react';
+import { useUser } from '@supabase/auth-helpers-react';
+import { supabase } from '../lib/supabaseClient';
+import { useRouter } from 'next/router';
 
 export default function NewChat() {
-  const [chatName, setChatName] = useState('')
-  const [users, setUsers] = useState<any[]>([])
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
-  const user = useUser()
-  const router = useRouter()
+  const [chatName, setChatName] = useState('');
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const user = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchApprovedFriends = async () => {
-      if (!user) return
+      if (!user) return;
 
       // フレンド申請のうち、承認済みのものだけ取得
       const { data: requests, error } = await supabase
         .from('friend_requests')
         .select('sender_id, receiver_id')
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .eq('status', 'accepted')
+        .eq('status', 'accepted');
 
       if (error) {
-        console.error('フレンド取得エラー', error)
-        return
+        console.error('フレンド取得エラー', error);
+        return;
       }
 
       // 自分ではない方（相手ユーザーID）だけを抽出
       const friendIds = requests.map((r) =>
         r.sender_id === user.id ? r.receiver_id : r.sender_id
-      )
+      );
 
       if (friendIds.length === 0) {
-        setUsers([]) // 該当なし
-        return
+        setUsers([]); // 該当なし
+        return;
       }
 
       // 相手ユーザーの情報を users テーブルから取得
       const { data: friendUsers, error: usersError } = await supabase
         .from('users')
         .select('id, email, user_profiles(nickname)')
-        .in('id', friendIds)
+        .in('id', friendIds);
 
       if (usersError) {
-        console.error('ユーザー情報取得エラー', usersError)
-        return
+        console.error('ユーザー情報取得エラー', usersError);
+        return;
       }
 
-      setUsers(friendUsers ?? [])
-    }
+      setUsers(friendUsers ?? []);
+    };
 
-    fetchApprovedFriends()
-  }, [user])
+    fetchApprovedFriends();
+  }, [user]);
 
   const toggleUser = (id: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
-    )
-  }
+    );
+  };
 
   const createChat = async () => {
     if (selectedUserIds.length === 0 || !user) {
-      alert('Please select at least one person.')
-      return
+      alert('Please select at least one person.');
+      return;
     }
 
-    const isGroup = selectedUserIds.length > 1
-    const nameToSave = isGroup ? chatName : null
+    const isGroup = selectedUserIds.length > 1;
+    const nameToSave = isGroup ? chatName : null;
 
     const { data: chat, error: chatError } = await supabase
       .from('chats')
       .insert([{ name: nameToSave, is_group: isGroup, created_by: user.id }])
       .select()
-      .single()
+      .single();
 
     if (chatError || !chat) {
-      alert('Failed to create chat.')
-      return
+      alert('Failed to create chat.');
+      return;
     }
 
-    const allMembers = [...selectedUserIds, user.id]
+    const allMembers = [...selectedUserIds, user.id];
     const { error: memberError } = await supabase.from('chat_members').insert(
       allMembers.map((userId) => ({
         chat_id: chat.id,
         user_id: userId,
       }))
-    )
+    );
 
     if (memberError) {
-      alert('Failed to add member.')
-      return
+      alert('Failed to add member.');
+      return;
     }
 
-    router.push(`/chat/${chat.id}`)
-  }
+    router.push(`/chat/${chat.id}`);
+  };
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 pb-10">
@@ -112,8 +112,8 @@ export default function NewChat() {
         <p className="font-semibold mb-2 w-full text-left">Select members：</p>
         <ul className="space-y-2 w-full max-w-xs">
           {users.map((u) => {
-            const isChecked = selectedUserIds.includes(u.id)
-            const nickname = u.user_profiles?.nickname || u.email
+            const isChecked = selectedUserIds.includes(u.id);
+            const nickname = u.user_profiles?.nickname || u.email;
             return (
               <li
                 key={u.id}
@@ -131,7 +131,7 @@ export default function NewChat() {
                   <span className="text-sm">{nickname}</span>
                 </label>
               </li>
-            )
+            );
           })}
         </ul>
       </div>
@@ -139,11 +139,11 @@ export default function NewChat() {
       <div className="flex justify-center">
         <button
           onClick={createChat}
-          className="w-5/6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+          className="w-5/6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
         >
           Create
         </button>
       </div>
     </div>
-  )
+  );
 }

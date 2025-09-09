@@ -84,7 +84,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
             <li
               key={u.id}
               className={`flex items-center justify-between border p-3 rounded shadow-sm max-w-xs mx-auto
-              ${isFriend ? 'bg-green-100' : sentStatus === 'pending' || receivedStatus === 'pending' ? 'bg-yellow-50' : 'bg-white'}`}
+              ${isFriend ? 'bg-gray-100' : sentStatus === 'pending' || receivedStatus === 'pending' ? 'bg-yellow-50' : 'bg-white'}`}
             >
               <span className="text-sm truncate">{name}</span>
 
@@ -95,10 +95,10 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               {receivedStatus === 'pending' && (
                 <span className="text-xs text-blue-600 ml-2">Pending approval</span>
               )}
-              {isFriend && <span className="text-xs text-green-600 ml-2">Friend</span>}
+              {isFriend && <span className="text-xs text-gray-600 ml-2">Friend</span>}
               {sentStatus === 'rejected' && (
                 <button
-                  className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
+                  className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
                   Reapplication
@@ -106,7 +106,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               )}
               {!sentStatus && !receivedStatus && (
                 <button
-                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded ml-2"
+                  className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
                   Application
@@ -116,7 +116,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               {/* 追加: フレンド解除ボタン */}
               {isFriend && (
                 <button
-                  className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
+                  className="text-xs bg-gray-400 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRemoveFriend(u.id)}
                 >
                   Unfriend

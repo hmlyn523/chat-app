@@ -478,12 +478,12 @@ export default function ChatRoom() {
 
   return (
     <div
-      className="pt-16 pb-16 flex flex-col overflow-hidden bg-sky-200"
+      className="pt-16 pb-16 flex flex-col overflow-hidden bg-gray-200"
       style={{ height: '100dvh' }}
     >
       {/* メッセージ一覧：スクロール対象 */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-sky-100"
+        className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-gray-100"
         style={{ overflowY: 'auto' }}
       >
         {messages.map((msg, index) => {
@@ -524,8 +524,8 @@ export default function ChatRoom() {
                                         px-4 py-2 text-sm break-words
                                         ${
                                           isMine
-                                            ? 'bg-sky-400 text-gray-800 rounded-2xl rounded-br-none border-2 border-black shadow-2xl'
-                                            : 'bg-cyan-200 text-gray-800 rounded-2xl rounded-tl-none border-2 border-black shadow-2xl'
+                                            ? 'bg-gray-400 text-gray-800 rounded-2xl rounded-br-none border-2 border-black shadow-2xl'
+                                            : 'bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none border-2 border-black shadow-2xl'
                                         }
                                         `}
                   >
@@ -562,7 +562,7 @@ export default function ChatRoom() {
       </div>
 
       {/* 固定フッター(入力欄 + 送信ボタン) */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-sky-200 border-t z-10 touch-none overscroll-contain">
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-gray-200 border-t z-10 touch-none overscroll-contain">
         <div className="flex items-center gap-2">
           {/* 画像選択ボタン */}
           <input
@@ -574,7 +574,7 @@ export default function ChatRoom() {
           />
           <label
             htmlFor="image-upload"
-            className="bg-sky-200 text-white rounded-full px-2 px-2 hover:bg-blue-600"
+            className="bg-gray-200 text-white rounded-full px-2 px-2 hover:bg-gray-600"
           >
             📸
           </label>
@@ -585,14 +585,14 @@ export default function ChatRoom() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Message..."
-            className="flex-1 border bg-sky-100 rounded-full px-4 py-2 focus:outline-none"
+            className="flex-1 border bg-gray-100 rounded-full px-4 py-2 focus:outline-none"
           />
           {/* 送信ボタン */}
           <input
             tabIndex={-1}
             value="🖋️"
             onClick={sendMessage}
-            className="bg-sky-300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-sky-400 w-12"
+            className="bg--300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-gray-400 w-12"
           />
         </div>
       </div>
