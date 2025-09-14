@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { sendFriendRequest } from '../lib/friendService';
 import { removeFriend } from '../lib/api/friend_requests';
+import { unfriend } from '../lib/friendService'; // unfriend をインポート
 
 export default function UserList({ currentUserId }: { currentUserId: string }) {
   const [users, setUsers] = useState<any[]>([]);
@@ -57,7 +58,13 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
   const handleRemoveFriend = async (friendId: string) => {
     if (!confirm('本当にフレンドを外しますか？')) return;
 
-    await removeFriend(currentUserId, friendId);
+    const { error } = await unfriend(currentUserId, friendId);
+    if (error) {
+      alert('フレンド解除に失敗しました');
+      return;
+    }
+
+    // ローカル state 更新
     setSentRequests((prev) => {
       const copy = { ...prev };
       delete copy[friendId];
@@ -68,6 +75,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
       delete copy[friendId];
       return copy;
     });
+
     alert('フレンドを外しました');
   };
 
