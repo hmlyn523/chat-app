@@ -9,8 +9,10 @@ export type Message = {
   image_url: string | null;
   users: {
     email: string;
-    user_profiles: { nickname: string }[];
-  }[];
+    user_profiles: {
+      nickname: string;
+    } | null;
+  } | null;
   message_reads: { user_id: string }[];
 };
 
@@ -37,7 +39,8 @@ export async function fetchMessagesByChatId(chatId: string): Promise<Message[]> 
     `
     )
     .eq('chat_id', chatId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
+    .overrideTypes<Message[], { merge: false }>();
 
   if (error) throw error;
   return data || [];
