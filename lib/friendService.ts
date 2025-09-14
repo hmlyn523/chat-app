@@ -88,35 +88,24 @@ export async function unfriend(userId: string, targetUserId: string) {
 
   if (friendError) return { error: friendError };
 
-  // 2. すべてのチャット（1対1 + グループ）を取得
+  // 2. 自分が参加しているチャットを取得
   const { data: chats, error: chatError } = await supabase.from('chats').select(`
     id,
-    is_group,
     chat_members!inner(user_id)
   `);
 
   if (chatError) return { error: chatError };
 
-  // 3. 1対1チャットの削除
-  const oneToOneChat = chats?.find((chat) => {
-    if (chat.is_group) return false;
+  for (const chat of chats ?? []) {
     const memberIds = chat.chat_members.map((m: any) => m.user_id);
-    return memberIds.includes(userId) && memberIds.includes(targetUserId);
-  });
 
-  if (oneToOneChat) {
-    const chatId = oneToOneChat.id;
-    await removeUserFromChat(chatId, userId);
-    await removeUserFromChat(chatId, targetUserId);
-  }
-
-  // 4. 自分が属するグループチャットから自分を削除
-  const groupChats = chats?.filter(
-    (chat) => chat.is_group && chat.chat_members.some((m: any) => m.user_id === userId)
-  );
-
-  for (const chat of groupChats ?? []) {
-    await removeUserFromChat(chat.id, userId);
+    // 自分または対象ユーザーがチャットにいる場合は削除
+    if (memberIds.includes(userId)) {
+      await removeUserFromChat(chat.id, userId);
+    }
+    if (memberIds.includes(targetUserId)) {
+      await removeUserFromChat(chat.id, targetUserId);
+    }
   }
 
   return { error: null };
