@@ -2,7 +2,7 @@
 import { supabase } from '../lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { removeUserFromChat } from '../lib/api/chats';
+import { removeUserFromChat, addFriendToChat } from '../lib/api/chats';
 
 type UserProfile = {
   user_id: string;
@@ -18,39 +18,6 @@ type ChatMemberData = {
     name: string;
   };
 };
-
-export async function addFriendToChat(userId: string, chatId: string, targetUserId: string) {
-  // 1. 自分のフレンドかチェック
-  const { data: friends, error: friendError } = await supabase
-    .from('friend_requests')
-    .select('*')
-    .or(
-      `and(sender_id.eq.${userId},receiver_id.eq.${targetUserId}),and(sender_id.eq.${targetUserId},receiver_id.eq.${userId})`
-    );
-
-  if (friendError) return { error: friendError };
-  if (!friends || friends.length === 0) return { error: '指定ユーザーはフレンドではありません' };
-
-  // 2. 既にチャットにいるかチェック
-  const { data: chatMembers, error: chatError } = await supabase
-    .from('chat_members')
-    .select('*')
-    .eq('chat_id', chatId)
-    .eq('user_id', targetUserId);
-
-  if (chatError) return { error: chatError };
-  if (chatMembers && chatMembers.length > 0) return { error: 'すでにチャットに参加しています' };
-
-  // 3. チャットに追加
-  const { error: insertError } = await supabase.from('chat_members').insert({
-    chat_id: chatId,
-    user_id: targetUserId,
-  });
-
-  if (insertError) return { error: insertError };
-
-  return { error: null };
-}
 
 export default function ChatHeader() {
   const router = useRouter();
@@ -175,12 +142,6 @@ export default function ChatHeader() {
     if (!confirm('このメンバーをチャットから削除しますか？')) return;
 
     await removeUserFromChat(chatId, memberId);
-    // const { error } = await removeUserFromChat(chatId, memberId);
-
-    // if (error) {
-    //   alert('削除に失敗しました: ' + error.message);
-    //   return;
-    // }
 
     // メンバー一覧を更新
     setMembers((prev) => prev.filter((m) => m.user_id !== memberId));
