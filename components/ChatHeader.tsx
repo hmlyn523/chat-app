@@ -2,7 +2,7 @@
 import { supabase } from '../lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { removeUserFromChat } from '../lib/api/friendService';
+import { removeUserFromChat } from '../lib/api/chats';
 
 type UserProfile = {
   user_id: string;

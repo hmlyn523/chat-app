@@ -3,7 +3,7 @@ import {
   getFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
-} from '../lib/api/friendService';
+} from '../lib/services/friendService';
 import { supabase } from '../lib/supabaseClient';
 
 export default function FriendRequestList({ currentUserId }: { currentUserId: string }) {
