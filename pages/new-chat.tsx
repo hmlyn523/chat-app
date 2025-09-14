@@ -97,7 +97,7 @@ export default function NewChat() {
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 pb-10">
-      <h1 className="text-2xl font-bold text-center mb-6">Create a new chat</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">新しいチャットを作成</h1>
 
       {selectedUserIds.length > 1 && (
         <input
@@ -109,7 +109,7 @@ export default function NewChat() {
       )}
 
       <div className="mb-6 flex flex-col items-center">
-        <p className="font-semibold mb-2 w-full text-left">Select members：</p>
+        <p className="font-semibold mb-2 w-full text-left">メンバーを選択：</p>
         <ul className="space-y-2 w-full max-w-xs">
           {users.map((u) => {
             const isChecked = selectedUserIds.includes(u.id);
@@ -141,7 +141,7 @@ export default function NewChat() {
           onClick={createChat}
           className="w-5/6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
         >
-          Create
+          チャット作成
         </button>
       </div>
     </div>

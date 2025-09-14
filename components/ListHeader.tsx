@@ -23,9 +23,9 @@ export default function ListHeader() {
   };
 
   const getPageTitle = () => {
-    if (pathname === '/friends') return 'Friend';
-    if (pathname === '/profile') return 'Profile';
-    if (pathname === '/friends/add') return 'Add Friend';
+    if (pathname === '/friends') return '友達一覧';
+    if (pathname === '/profile') return 'プロフィール';
+    if (pathname === '/friends/add') return '友達追加';
     return 'Anonify'; // デフォルト
   };
 
@@ -47,10 +47,10 @@ export default function ListHeader() {
 
       <div className="flex items-center gap-4">
         <button onClick={goToProfile} className="text-sm text-blue-500">
-          Profile
+          プロフィール
         </button>
         <button onClick={handleLogout} className="text-sm text-blue-500">
-          Log out
+          ログアウト
         </button>
       </div>
     </header>

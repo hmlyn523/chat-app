@@ -109,7 +109,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
                   className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
-                  Reapplication
+                  再申請
                 </button>
               )}
               {!sentStatus && !receivedStatus && (
@@ -117,7 +117,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
                   className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
-                  Application
+                  申請
                 </button>
               )}
 
@@ -127,7 +127,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
                   className="text-xs bg-gray-400 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRemoveFriend(u.id)}
                 >
-                  Unfriend
+                  友達解除
                 </button>
               )}
             </li>

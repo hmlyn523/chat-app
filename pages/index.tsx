@@ -164,7 +164,7 @@ export default function Home() {
   return (
     <div className="max-w-md mx-auto pt-24 space-y-6">
       <header className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">Connect with friends</h1>
+        <h1 className="text-2xl font-bold text-gray-800">友達とつながる</h1>
       </header>
 
       <ul className="space-y-3 px-4">
@@ -190,13 +190,13 @@ export default function Home() {
           className="w-5/6 bg-gray-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-gray-700 transition"
           onClick={() => router.push('/new-chat')}
         >
-          ➕ Create chat
+          ➕ チャット作成
         </button>
         <Link
           href="/friends"
           className="block text-center w-5/6 border border-gray-300 py-2 px-4 rounded-xl text-gray-700 hover:bg-gray-50 transition"
         >
-          👥 Friend
+          👥 友達
         </Link>
       </div>
     </div>
