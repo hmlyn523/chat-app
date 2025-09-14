@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getFriendRequests, acceptFriendRequest, rejectFriendRequest } from '../lib/friendService';
+import {
+  getFriendRequests,
+  acceptFriendRequest,
+  rejectFriendRequest,
+} from '../lib/api/friendService';
 import { supabase } from '../lib/supabaseClient';
 
 export default function FriendRequestList({ currentUserId }: { currentUserId: string }) {

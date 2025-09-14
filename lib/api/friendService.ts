@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '../supabaseClient';
 
 export async function sendFriendRequest(senderId: string, receiverId: string) {
   const { error, data } = await supabase
