@@ -1,6 +1,6 @@
 {
-  "name": "Anonify 24h Chat",
-  "short_name": "24hChat",
+  "name": "24Chat",
+  "short_name": "24Chat",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
