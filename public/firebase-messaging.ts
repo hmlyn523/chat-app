@@ -59,9 +59,55 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
 /**
  * フォアグラウンドでの通知受信リスナー
  */
-export function onMessageListener() {
+export function onMessageListener(callback: (payload: any) => void) {
   if (typeof window === 'undefined' || !messaging) return;
-  onMessage(messaging, (payload) => {
-    console.log('Message received. ', payload);
-  });
+  onMessage(messaging, callback);
+}
+
+/**
+ * すでに発行済みのトークンを取得（permission が granted の場合のみ）
+ */
+export async function getExistingToken(): Promise<string | null> {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  if (Notification.permission !== 'granted') {
+    return null;
+  }
+
+  try {
+    // Service Worker が登録済みであることを確認
+    let registration = await navigator.serviceWorker.getRegistration('/');
+    if (!registration) {
+      // 登録されていなければ登録
+      console.warn('No service worker registration found. Registering now...');
+      registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+        scope: '/',
+      });
+      console.log('Service Worker registered:', registration);
+    }
+
+    const firebaseConfig = {
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+    };
+
+    const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
+    const messaging = getMessaging(app);
+
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY!,
+      serviceWorkerRegistration: registration, // ✅ これが必須！
+    });
+
+    return token || null;
+  } catch (err) {
+    console.error('An error occurred while retrieving token.', err);
+    return null;
+  }
 }
