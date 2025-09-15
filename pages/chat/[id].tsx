@@ -420,7 +420,7 @@ export default function ChatRoom() {
         (senderData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
 
       // 3. チャット参加者の中から自分以外のユーザーにプッシュ通知を送信
-      const otherMembers = members.filter((member) => member.user_id !== user.id);
+      const otherMembers = members.filter((member) => member.user_profiles.user_id !== user.id);
 
       // 各メンバーに並行してプッシュ通知を送信
       const pushPromises = otherMembers.map(async (member) => {
@@ -431,7 +431,7 @@ export default function ChatRoom() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId: member.user_id,
+              userId: member.id,
               title: senderName,
               body: input.length > 50 ? input.substring(0, 50) + '...' : input,
               data: {
@@ -442,12 +442,15 @@ export default function ChatRoom() {
           });
 
           if (!response.ok) {
-            console.error(`Failed to send push to ${member.user_id}:`, await response.text());
+            console.error(
+              `Failed to send push to ${member.user_profiles.user_id}:`,
+              await response.text()
+            );
           } else {
-            console.log(`Push notification sent to ${member.user_id}`);
+            console.log(`Push notification sent to ${member.user_profiles.user_id}`);
           }
         } catch (pushError) {
-          console.error(`Error sending push to ${member.user_id}:`, pushError);
+          console.error(`Error sending push to ${member.user_profiles.user_id}:`, pushError);
         }
       });
 
