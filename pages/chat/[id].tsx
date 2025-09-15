@@ -123,7 +123,7 @@ export default function ChatRoom() {
         (senderData?.user_profiles as unknown as { nickname: string })?.nickname ?? null;
 
       // 4. チャット参加者の中から自分以外のユーザーにプッシュ通知を送信
-      const otherMembers = members.filter((member) => member.user_id !== user.id);
+      const otherMembers = members.filter((member) => member.user_profiles.user_id !== user.id);
 
       const pushPromises = otherMembers.map(async (member) => {
         try {
@@ -477,7 +477,9 @@ export default function ChatRoom() {
     }
   };
 
-  const unjoinedUsers = allUsers.filter((u) => !members.find((m) => m.user_id === u.id));
+  const unjoinedUsers = allUsers.filter(
+    (u) => !members.find((m) => m.user_profiles.user_id === u.id)
+  );
 
   return (
     <div
@@ -495,9 +497,9 @@ export default function ChatRoom() {
           const timeText = dayjs(msg.created_at).format('HH:mm');
 
           const readByUserIds = msg.message_reads?.map((r: any) => r.user_id) || [];
-          const otherMembers = members.filter((m) => m.user_id !== currentUserId);
+          const otherMembers = members.filter((m) => m.user_profiles.user_id !== currentUserId);
           const readCount = readByUserIds.filter((id: any) =>
-            otherMembers.some((m) => m.user_id === id)
+            otherMembers.some((m) => m.user_profiles.user_id === id)
           ).length;
           const totalOtherMembers = otherMembers.length;
 
