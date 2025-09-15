@@ -114,7 +114,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               )}
               {!sentStatus && !receivedStatus && (
                 <button
-                  className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
+                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRequest(u.id)}
                 >
                   申請
@@ -124,7 +124,7 @@ export default function UserList({ currentUserId }: { currentUserId: string }) {
               {/* 追加: フレンド解除ボタン */}
               {isFriend && (
                 <button
-                  className="text-xs bg-gray-400 text-white px-3 py-1 rounded ml-2"
+                  className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
                   onClick={() => handleRemoveFriend(u.id)}
                 >
                   友達解除

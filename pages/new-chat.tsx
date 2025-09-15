@@ -97,8 +97,6 @@ export default function NewChat() {
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 pb-10">
-      <h1 className="text-2xl font-bold text-center mb-6">新しいチャットを作成</h1>
-
       {selectedUserIds.length > 1 && (
         <input
           placeholder="Loop name (optional)"

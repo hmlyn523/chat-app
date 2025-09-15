@@ -126,6 +126,10 @@ export default function Home() {
       };
     };
 
+    const interval = setInterval(() => {
+      loadChats();
+      loadUnreadCounts();
+    }, 30000);
     // const interval = setInterval(() => {
     //     loadUnreadCounts();
     // }, 5000); // 5秒ごとに更新
@@ -154,6 +158,7 @@ export default function Home() {
     // return () => clearInterval(interval);
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [session, user]);
 
@@ -163,10 +168,6 @@ export default function Home() {
 
   return (
     <div className="max-w-md mx-auto pt-24 space-y-6">
-      <header className="text-center">
-        <h1 className="text-2xl font-bold text-gray-800">友達とつながる</h1>
-      </header>
-
       <ul className="space-y-3 px-4">
         {chats.map((c) => (
           <li key={c.chat_id}>
@@ -187,7 +188,7 @@ export default function Home() {
 
       <div className="space-y-3 pt-6 flex flex-col items-center">
         <button
-          className="w-5/6 bg-gray-600 text-white py-2 px-4 rounded-xl font-semibold hover:bg-gray-700 transition"
+          className="w-5/6 bg-blue-500 text-white py-2 px-4 rounded-xl font-semibold hover:bg-gray-700 transition"
           onClick={() => router.push('/new-chat')}
         >
           ➕ チャット作成

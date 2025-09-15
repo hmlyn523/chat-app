@@ -524,8 +524,8 @@ export default function ChatRoom() {
                                         px-4 py-2 text-sm break-words
                                         ${
                                           isMine
-                                            ? 'bg-gray-400 text-gray-800 rounded-2xl rounded-br-none border-2 border-black shadow-2xl'
-                                            : 'bg-gray-200 text-gray-800 rounded-2xl rounded-tl-none border-2 border-black shadow-2xl'
+                                            ? 'bg-sky-100 text-gray-800 rounded-2xl rounded-br-none border-2 border-black shadow-2xl'
+                                            : 'bg-yellow-100 text-gray-800 rounded-2xl rounded-tl-none border-2 border-black shadow-2xl'
                                         }
                                         `}
                   >

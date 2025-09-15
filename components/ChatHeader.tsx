@@ -179,7 +179,7 @@ export default function ChatHeader() {
         {/* 右側のプロフィール開閉ボタン */}
         {isChatRoom && (
           <button onClick={() => setProfileOpen(!isProfileOpen)} className="text-xl font-bold ml-2">
-            {isProfileOpen ? 'v' : 'i'}
+            {isProfileOpen ? '≡' : '≡'}
           </button>
         )}
 

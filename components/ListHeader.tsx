@@ -25,8 +25,9 @@ export default function ListHeader() {
   const getPageTitle = () => {
     if (pathname === '/friends') return '友達一覧';
     if (pathname === '/profile') return 'プロフィール';
+    if (pathname === '/new-chat') return 'チャット作成';
     if (pathname === '/friends/add') return '友達追加';
-    return 'Anonify'; // デフォルト
+    return '24Chat'; // デフォルト
   };
 
   return (

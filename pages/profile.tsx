@@ -60,10 +60,6 @@ export default function Profile() {
 
   return (
     <div className="mt-20 p-4">
-      <div className="text-center">
-        <h1 className="text-xl font-bold mb-4">Edit Profile</h1>
-      </div>
-
       <div className="space-y-4 max-w-sm mx-auto">
         <div>
           <label className="font-semibold mb-2 w-full text-left">Nickname:</label>
