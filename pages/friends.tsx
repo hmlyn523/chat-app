@@ -21,8 +21,8 @@ export default function FriendsPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 pt-24 space-y-8">
-      <UserList currentUserId={currentUserId} />
       <FriendRequestList currentUserId={currentUserId} />
+      <UserList currentUserId={currentUserId} />
     </div>
   );
 }
