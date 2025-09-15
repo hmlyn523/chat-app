@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 
 export async function removeUserFromChat(chatId: string, userId: string) {
   // 1. 該当ユーザーをメンバーから削除

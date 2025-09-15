@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 import { useRef } from 'react';
 import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
 import localeData from 'dayjs/plugin/localeData';
 import 'dayjs/locale/ja';
 
-import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from '../../lib/services/userService';
-import { useSafeScroll } from '../../lib/hooks/safeScrollToBottom';
+import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from 'lib/services/userService';
+import { useSafeScroll } from 'lib/hooks/safeScrollToBottom';
 
 dayjs.extend(weekday);
 dayjs.extend(localeData);

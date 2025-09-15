@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { sendFriendRequest } from '../lib/services/friendService';
-import { removeFriend } from '../lib/api/friend_requests';
-import { unfriend } from '../lib/services/friendService'; // unfriend をインポート
+import { supabase } from 'lib/supabaseClient';
+import { sendFriendRequest } from 'lib/services/friendService';
+import { removeFriend } from 'lib/api/friend_requests';
+import { unfriend } from 'lib/services/friendService'; // unfriend をインポート
 
 export default function UserList({ currentUserId }: { currentUserId: string }) {
   const [users, setUsers] = useState<any[]>([]);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSession, useUser } from '@supabase/auth-helpers-react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 import Link from 'next/link';
 
 export default function Home() {

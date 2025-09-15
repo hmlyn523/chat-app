@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import UserList from '../components/UserList';
-import FriendRequestList from '../components/FriendRequestList';
+import { supabase } from 'lib/supabaseClient';
+import UserList from 'components/UserList';
+import FriendRequestList from 'components/FriendRequestList';
 
 export default function FriendsPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);

@@ -1,5 +1,5 @@
 // lib/api/messages.ts
-import { supabase } from '../supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 
 export type Message = {
   id: string;

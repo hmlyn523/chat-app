@@ -5,11 +5,11 @@ import { SessionContextProvider, useUser } from '@supabase/auth-helpers-react';
 import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import { Session } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/router';
-import '../styles/globals.css';
-import ChatHeader from '../components/ChatHeader';
-import ListHeader from '../components/ListHeader';
-import { supabase } from '../lib/supabaseClient';
-import { listenForSWUpdate } from '../lib/serviceWorkerUpdater';
+import 'styles/globals.css';
+import ChatHeader from 'components/ChatHeader';
+import ListHeader from 'components/ListHeader';
+import { supabase } from 'lib/supabaseClient';
+import { listenForSWUpdate } from 'lib/serviceWorkerUpdater';
 
 // FCM登録を行うコンポーネント
 function FCMRegistration() {
@@ -32,7 +32,7 @@ function FCMRegistration() {
       try {
         // 動的importを使用してSSRを回避
         const { requestPermissionAndGetToken, onMessageListener, getExistingToken } = await import(
-          '../public/firebase-messaging'
+          'public/firebase-messaging'
         );
 
         // 通知許可とトークン取得

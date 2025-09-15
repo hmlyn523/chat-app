@@ -3,8 +3,8 @@ import {
   getFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
-} from '../lib/services/friendService';
-import { supabase } from '../lib/supabaseClient';
+} from 'lib/services/friendService';
+import { supabase } from 'lib/supabaseClient';
 
 export default function FriendRequestList({ currentUserId }: { currentUserId: string }) {
   const [requests, setRequests] = useState<any[]>([]);

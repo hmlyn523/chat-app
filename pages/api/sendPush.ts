@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 
 if (!admin.apps.length) {
   admin.initializeApp({

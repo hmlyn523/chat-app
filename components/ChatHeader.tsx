@@ -1,8 +1,8 @@
 // components/ChatHeader.tsx
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { removeUserFromChat, addFriendToChat } from '../lib/api/chats';
+import { removeUserFromChat, addFriendToChat } from 'lib/api/chats';
 
 type UserProfile = {
   user_id: string;

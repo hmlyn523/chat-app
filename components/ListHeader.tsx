@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
