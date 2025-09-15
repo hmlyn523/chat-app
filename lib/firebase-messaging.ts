@@ -15,6 +15,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const messaging = getMessaging(app);
 
 export async function requestPermissionAndGetToken(): Promise<string | null> {
+  alert('間違った requestPermissionAndGetToken() が呼ばれました。');
   try {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
@@ -32,10 +33,12 @@ export async function requestPermissionAndGetToken(): Promise<string | null> {
 }
 
 export function onMessageListener(callback: (payload: any) => void) {
+  alert('間違った onMessageListener() が呼ばれました。');
   onMessage(messaging, callback);
 }
 
 export async function getExistingToken(): Promise<string | null> {
+  alert('間違った getExistingToken() が呼ばれました。');
   try {
     if (Notification.permission !== 'granted') {
       return null;
