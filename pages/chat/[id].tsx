@@ -577,7 +577,7 @@ export default function ChatRoom() {
           />
           <label
             htmlFor="image-upload"
-            className="bg-gray-200 text-white rounded-full px-2 px-2 hover:bg-gray-600"
+            className="bg-gray-200 text-white rounded-full px-2  hover:bg-gray-600"
           >
             📸
           </label>
