@@ -28,7 +28,9 @@ export function AuthForm() {
         }
       }
 
-      alert('We have sent you a sign-up confirmation email.');
+      alert(
+        '登録確認メールをお送りしました。メール内のリンクをクリックして登録を完了してください。'
+      );
     }
   };
 
@@ -47,14 +49,14 @@ export function AuthForm() {
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email address"
+        placeholder="Emailアドレス"
         className="w-full border p-2 mb-2 rounded"
       />
       <input
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
+        placeholder="パスワード"
         className="w-full border p-2 mb-2 rounded"
       />
 
@@ -64,7 +66,7 @@ export function AuthForm() {
           type="text"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
-          placeholder="Nickname"
+          placeholder="ニックネーム"
           className="w-full border p-2 mb-4 rounded"
         />
       )}
@@ -74,14 +76,14 @@ export function AuthForm() {
           onClick={handleSignUp}
           className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
         >
-          Sign up
+          サインアップ
         </button>
       ) : (
         <button
           onClick={handleSignIn}
           className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
         >
-          Login
+          ログイン
         </button>
       )}
 
@@ -89,7 +91,7 @@ export function AuthForm() {
         onClick={() => setIsSignUp(!isSignUp)}
         className="mt-4 text-sm text-gray-600 underline"
       >
-        {isSignUp ? '> If you already have an account, click here.' : '> Click here to register'}
+        {isSignUp ? '> アカウントがある場合はこちらをクリック' : '> 新規登録はこちら'}
       </button>
     </div>
   );
