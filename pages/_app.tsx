@@ -32,7 +32,7 @@ function FCMRegistration() {
       try {
         // 動的importを使用してSSRを回避
         const { requestPermissionAndGetToken, onMessageListener, getExistingToken } = await import(
-          '../lib/firebase-messaging'
+          '../public/firebase-messaging'
         );
 
         // 通知許可とトークン取得
