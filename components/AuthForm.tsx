@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from 'lib/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
 export function AuthForm() {
   const [email, setEmail] = useState('');
@@ -15,22 +16,13 @@ export function AuthForm() {
 
     if (error) {
       alert(error.message);
-    } else {
-      // サインアップ直後は確認メールが送られる。確認後にプロフィールを作成する必要があるが、
-      // 今回は仮に自動で user_profiles にも追加しておく。
-      const user = data?.user;
-      if (user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert([{ user_id: user.id, nickname }]);
-        if (profileError) {
-          console.error('ニックネーム登録エラー:', profileError.message);
-        }
-      }
+      return;
+    }
 
-      alert(
-        '登録確認メールをお送りしました。メール内のリンクをクリックして登録を完了してください。'
-      );
+    const user = data?.user;
+    if (user) {
+      await supabase.from('user_profiles').insert([{ user_id: user.id, nickname }]);
+      alert('登録確認メールを送信しました。');
     }
   };
 
@@ -39,11 +31,62 @@ export function AuthForm() {
     if (error) alert(error.message);
   };
 
+  const [anonNickname, setAnonNickname] = useState(() => {
+    return localStorage.getItem('anonNickname') || '';
+  });
+
+  // 追加: 匿名ログイン
+  const handleAnonymousLogin = async () => {
+    let anonEmail = localStorage.getItem('anonEmail');
+    let anonPassword = localStorage.getItem('anonPassword');
+
+    if (!anonEmail || !anonPassword) {
+      // 初回生成
+      anonEmail = `anon_${uuidv4()}@example.com`;
+      anonPassword = uuidv4();
+
+      localStorage.setItem('anonEmail', anonEmail);
+      localStorage.setItem('anonPassword', anonPassword);
+
+      // サインアップ
+      const { data, error } = await supabase.auth.signUp({
+        email: anonEmail,
+        password: anonPassword,
+      });
+
+      if (error) {
+        alert('匿名ログイン失敗: ' + error.message);
+        return;
+      }
+
+      const user = data?.user;
+      if (user) {
+        const nicknameToUse = anonNickname || `匿名_${Math.floor(Math.random() * 1000)}`;
+        await supabase
+          .from('user_profiles')
+          .insert([{ user_id: user.id, nickname: nicknameToUse }]);
+        localStorage.setItem('anonNickname', nicknameToUse);
+        alert('匿名アカウントを作成してログインしました！');
+      }
+    } else {
+      // 既存アカウントでログイン
+      const { error } = await supabase.auth.signInWithPassword({
+        email: anonEmail,
+        password: anonPassword,
+      });
+
+      if (error) {
+        alert('匿名ログイン失敗: ' + error.message);
+        return;
+      }
+
+      alert('匿名ログインしました！');
+    }
+  };
+
   return (
     <div className="max-w-sm mx-auto p-4 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">
-        {isSignUp ? 'Sign up (new registration)' : 'Login'}
-      </h2>
+      <h2 className="text-2xl font-bold mb-4">{isSignUp ? 'Sign up' : 'Login'}</h2>
 
       <input
         type="email"
@@ -60,7 +103,6 @@ export function AuthForm() {
         className="w-full border p-2 mb-2 rounded"
       />
 
-      {/* サインアップのときだけニックネーム入力欄を表示 */}
       {isSignUp && (
         <input
           type="text"
@@ -74,24 +116,41 @@ export function AuthForm() {
       {isSignUp ? (
         <button
           onClick={handleSignUp}
-          className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
+          className="w-full bg-gray-500 text-white py-2 rounded mb-2 hover:bg-gray-600"
         >
           サインアップ
         </button>
       ) : (
         <button
           onClick={handleSignIn}
-          className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
+          className="w-full bg-gray-500 text-white py-2 rounded mb-2 hover:bg-gray-600"
         >
           ログイン
         </button>
       )}
 
+      {/* 匿名ログイン時のニックネーム入力欄 */}
+      <input
+        type="text"
+        value={anonNickname}
+        onChange={(e) => setAnonNickname(e.target.value)}
+        placeholder="ニックネームを入力"
+        className="w-full border p-2 mb-4 rounded"
+      />
+
+      {/* 匿名ログインボタン */}
+      <button
+        onClick={handleAnonymousLogin}
+        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 mb-2"
+      >
+        匿名ログイン
+      </button>
+
       <button
         onClick={() => setIsSignUp(!isSignUp)}
         className="mt-4 text-sm text-gray-600 underline"
       >
-        {isSignUp ? '> アカウントがある場合はこちらをクリック' : '> 新規登録はこちら'}
+        {isSignUp ? '> アカウントがある場合はこちら' : '> 新規登録はこちら'}
       </button>
     </div>
   );
