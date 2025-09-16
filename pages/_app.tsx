@@ -115,11 +115,9 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
   const router = useRouter();
   const isChatRoom = router.pathname?.startsWith('/chat/');
 
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-
   useEffect(() => {
     listenForSWUpdate(() => {
-      setUpdateAvailable(true);
+      window.location.reload();
     });
   }, []);
 
@@ -130,25 +128,6 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
     >
       {/* FCM登録コンポーネント */}
       <FCMRegistration />
-
-      {/* PWA更新通知バー */}
-      {updateAvailable && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow-lg z-50 flex items-center space-x-2">
-          <span>新しいバージョンがあります</span>
-          <button
-            onClick={async () => {
-              const registration = await navigator.serviceWorker.getRegistration();
-              if (registration?.waiting) {
-                // 新しい SW を即アクティブに
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-              }
-            }}
-            className="underline font-semibold"
-          >
-            更新
-          </button>
-        </div>
-      )}
 
       {/* ヘッダー */}
       {
