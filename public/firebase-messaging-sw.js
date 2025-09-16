@@ -16,7 +16,7 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 // バックグラウンド通知受信
-messaging.onBackgroundMessage(function (payload) {
+messaging.onBackgroundMessage(async (payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
   const notificationTitle = payload.notification?.title || '通知';
@@ -26,35 +26,16 @@ messaging.onBackgroundMessage(function (payload) {
     data: payload.data || {},
   };
 
-  event.waitUntil(
-    (async () => {
-      const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+  const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-      const msgChatId = payload.data?.chatId;
+  const msgChatId = payload.data?.chatId;
+  const isChatOpen = clientList.some((client) => client.url.includes(`/chat/${msgChatId}`));
 
-      // デバッグ用に開いているURL一覧を通知で確認
-      const urls = clientList.map((c) => c.url).join('\n');
-      self.registration.showNotification('Debug URLs', {
-        body: urls || 'No clients',
-      });
-
-      // 本来の判定
-      const isChatOpen = clientList.some((client) => {
-        try {
-          const pathname = new URL(client.url).pathname; // クエリやハッシュを無視
-          return pathname === `/chat/${msgChatId}`;
-        } catch (e) {
-          return false;
-        }
-      });
-
-      if (!isChatOpen) {
-        self.registration.showNotification(notificationTitle, notificationOptions);
-      } else {
-        console.log('チャット画面開いているので通知スキップ');
-      }
-    })()
-  );
+  if (!isChatOpen) {
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  } else {
+    console.log('チャット画面開いているので通知スキップ');
+  }
 });
 
 // 通知クリック時の遷移
