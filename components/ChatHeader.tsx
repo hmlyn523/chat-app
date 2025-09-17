@@ -185,46 +185,54 @@ export default function ChatHeader() {
 
         {/* プロフィールオーバーレイ */}
         {isProfileOpen && (
-          <div className="absolute top-full right-4 w-72 bg-white shadow-xl rounded-lg p-4 z-30 max-h-[60vh] overflow-y-auto">
-            {/* フレンド追加ボタン */}
-            <div className="mb-2">
-              <button
-                onClick={() => setAddFriendOpen(true)}
-                className="w-full bg-blue-500 text-white py-2 rounded"
-              >
-                フレンドを追加
-              </button>
-            </div>
-
-            {/* メンバー一覧 */}
-            <h2 className="text-lg font-semibold mb-2">メンバー一覧</h2>
-            <ul className="space-y-2">
-              {members.map((m) => (
-                <li
-                  key={m.user_id}
-                  className="flex items-center justify-between gap-2 p-2 bg-gray-100 rounded"
+          <div
+            className="fixed inset-0 z-20 bg-black/10"
+            onClick={() => setProfileOpen(false)} // 背景クリックで閉じる
+          >
+            <div
+              className="fixed top-16 right-4 w-72 bg-white shadow-xl rounded-lg p-4 max-h-[60vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()} // 内部クリックで閉じない
+            >
+              {/* フレンド追加ボタン */}
+              <div className="mb-2">
+                <button
+                  onClick={() => setAddFriendOpen(true)}
+                  className="w-full bg-blue-500 text-white py-2 rounded"
                 >
-                  <span>{m.nickname}</span>
-                  {m.user_id !== currentUserId && (
-                    <button
-                      onClick={() => handleRemoveMember(m.user_id)}
-                      className="text-xs text-red-500"
-                    >
-                      削除
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+                  フレンドを追加
+                </button>
+              </div>
 
-            {/* グループ脱退ボタン */}
-            <div className="mt-4">
-              <button
-                onClick={handleLeaveGroup}
-                className="w-full bg-red-500 text-white py-2 rounded"
-              >
-                グループから脱退
-              </button>
+              {/* メンバー一覧 */}
+              <h2 className="text-lg font-semibold mb-2">メンバー一覧</h2>
+              <ul className="space-y-2">
+                {members.map((m) => (
+                  <li
+                    key={m.user_id}
+                    className="flex items-center justify-between gap-2 p-2 bg-gray-100 rounded"
+                  >
+                    <span>{m.nickname}</span>
+                    {m.user_id !== currentUserId && (
+                      <button
+                        onClick={() => handleRemoveMember(m.user_id)}
+                        className="text-xs text-red-500"
+                      >
+                        削除
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+
+              {/* グループ脱退ボタン */}
+              <div className="mt-4">
+                <button
+                  onClick={handleLeaveGroup}
+                  className="w-full bg-red-500 text-white py-2 rounded"
+                >
+                  グループから脱退
+                </button>
+              </div>
             </div>
           </div>
         )}
