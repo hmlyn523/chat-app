@@ -388,6 +388,7 @@ export default function ChatRoom() {
 
   // FCMのメッセージ受信リスナー登録
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const messageHandler = (payload: any) => {
       const msgChatId = payload.data?.chatId;
       const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
