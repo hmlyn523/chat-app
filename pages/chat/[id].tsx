@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
 import localeData from 'dayjs/plugin/localeData';
 import 'dayjs/locale/ja';
-import { onMessageListener } from '@/lib/firebase-messaging';
+import { onMessageListener } from '@/public/firebase-messaging';
 
 import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from 'lib/services/userService';
 import { useSafeScroll } from 'lib/hooks/safeScrollToBottom';
@@ -388,24 +388,21 @@ export default function ChatRoom() {
 
   // FCMのメッセージ受信リスナー登録
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const messageHandler = (payload: any) => {
-      const msgChatId = payload.data?.chatId;
-      const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
+    if (typeof window !== 'undefined') {
+      const messageHandler = (payload: any) => {
+        const msgChatId = payload.data?.chatId;
+        const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
 
-      if (!isCurrentChat) {
-        new Notification(payload.notification?.title || '新着メッセージ', {
-          body: payload.notification?.body || '',
-          icon: '/icons/icon-192.png',
-        });
-      }
-    };
+        if (!isCurrentChat) {
+          new Notification(payload.notification?.title || '新着メッセージ', {
+            body: payload.notification?.body || '',
+            icon: '/icons/icon-192.png',
+          });
+        }
+      };
 
-    onMessageListener(messageHandler);
-
-    return () => {
-      // クリーンアップ不要
-    };
+      onMessageListener(messageHandler);
+    }
   }, []);
 
   // メッセージ送信
