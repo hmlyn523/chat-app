@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
 import localeData from 'dayjs/plugin/localeData';
 import 'dayjs/locale/ja';
+import { onMessageListener } from '@/lib/firebase-messaging';
 
 import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from 'lib/services/userService';
 import { useSafeScroll } from 'lib/hooks/safeScrollToBottom';
@@ -69,6 +70,7 @@ export default function ChatRoom() {
     }
   };
 
+  // 画像アップロード処理
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !chatId) return;
@@ -136,8 +138,8 @@ export default function ChatRoom() {
               userId: member.user_id,
               title: senderName,
               body: '📷 画像を送信しました',
+              chatId: chatId,
               data: {
-                chatRoomId: chatId,
                 senderId: user.id,
               },
             }),
@@ -384,6 +386,27 @@ export default function ChatRoom() {
     scrollToBottom();
   }, []);
 
+  // FCMのメッセージ受信リスナー登録
+  useEffect(() => {
+    const messageHandler = (payload: any) => {
+      const msgChatId = payload.data?.chatId;
+      const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
+
+      if (!isCurrentChat) {
+        new Notification(payload.notification?.title || '新着メッセージ', {
+          body: payload.notification?.body || '',
+          icon: '/icons/icon-192.png',
+        });
+      }
+    };
+
+    onMessageListener(messageHandler);
+
+    return () => {
+      // クリーンアップ不要
+    };
+  }, []);
+
   // メッセージ送信
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -434,8 +457,8 @@ export default function ChatRoom() {
               userId: member.id,
               title: senderName,
               body: input.length > 50 ? input.substring(0, 50) + '...' : input,
+              chatId: chatId, // 通知クリック時にこのチャットルームに遷移
               data: {
-                chatRoomId: chatId, // 通知クリック時にこのチャットルームに遷移
                 senderId: user.id,
               },
             }),
@@ -594,6 +617,7 @@ export default function ChatRoom() {
           />
           {/* 送信ボタン */}
           <input
+            // type="button"
             tabIndex={-1}
             value="🖋️"
             onClick={sendMessage}

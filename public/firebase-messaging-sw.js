@@ -17,8 +17,6 @@ const messaging = firebase.messaging();
 
 // バックグラウンド通知受信
 messaging.onBackgroundMessage(async (payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
   const notificationTitle = payload.notification?.title || '通知';
   const notificationOptions = {
     body: payload.notification?.body || '',
@@ -26,16 +24,7 @@ messaging.onBackgroundMessage(async (payload) => {
     data: payload.data || {},
   };
 
-  const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-
-  const msgChatId = payload.data?.chatId;
-  const isChatOpen = clientList.some((client) => client.url.includes(`/chat/${msgChatId}`));
-
-  if (!isChatOpen) {
-    self.registration.showNotification(notificationTitle, notificationOptions);
-  } else {
-    console.log('チャット画面開いているので通知スキップ');
-  }
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // 通知クリック時の遷移

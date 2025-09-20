@@ -15,11 +15,11 @@ if (!admin.apps.length) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { userId, title, body, data } = req.body;
+  const { userId, title, body, data, chatId } = req.body;
 
   // バリデーション
-  if (!userId || !title || !body) {
-    console.error('Missing parameters:', { userId, title, body });
+  if (!userId || !title || !body || !chatId) {
+    console.error('Missing parameters:', { userId, title, body, chatId });
     return res.status(400).json({ error: 'Missing parameters' });
   }
 
@@ -48,7 +48,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         body,
       },
-      data: stringifiedData,
+      data: {
+        ...stringifiedData, // 既存のデータ
+        click_action: `/chat/${chatId}`,
+      },
       android: {
         notification: {
           title,
@@ -57,7 +60,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           priority: 'high',
           defaultSound: true,
         },
-        data: stringifiedData,
+        data: {
+          ...stringifiedData, // 既存のデータ
+          click_action: `/chat/${chatId}`,
+        },
       },
       apns: {
         payload: {
@@ -67,6 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             badge: 1,
           },
           ...stringifiedData,
+          click_action: `/chat/${chatId}`,
         },
       },
     };
