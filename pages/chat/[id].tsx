@@ -575,7 +575,7 @@ export default function ChatRoom() {
                     <div>{timeText}</div>
                     {isMine && (
                       <div className="ml-2 text-gray-500">
-                        {readCount === totalOtherMembers ? 'read' : ''}
+                        {readCount === totalOtherMembers ? '既読' : ''}
                       </div>
                     )}
                   </div>
