@@ -1,135 +1,227 @@
-import { useEffect, useState } from 'react';
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from 'lib/supabaseClient';
-import { sendFriendRequest } from 'lib/services/friendService';
-import { removeFriend } from 'lib/api/friend_requests';
-import { unfriend } from 'lib/services/friendService'; // unfriend をインポート
+import { sendFriendRequest, unfriend } from 'lib/services/friendService';
+import { RawUser, UserProfile, FriendRequest } from '@/types'; // ClientHeader.tsx と共通の型をインポート
 
-export default function UserList({ currentUserId }: { currentUserId: string }) {
-  const [users, setUsers] = useState<any[]>([]);
-  const [sentRequests, setSentRequests] = useState<Record<string, string>>({});
-  const [receivedRequests, setReceivedRequests] = useState<Record<string, string>>({});
+interface UserListProps {
+  currentUserId: string;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
+export default function UserList({ currentUserId }: UserListProps) {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [sentRequests, setSentRequests] = useState<Record<string, FriendRequest['status']>>({});
+  const [receivedRequests, setReceivedRequests] = useState<Record<string, FriendRequest['status']>>(
+    {}
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // データ取得関数
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
       // ユーザー一覧取得
-      const { data: usersData } = await supabase
+      const { data, error } = await supabase
         .from('users')
-        .select('id, email, user_profiles(nickname)');
+        .select('id, email, user_profiles!inner(user_id, nickname)')
+        .neq('id', currentUserId);
 
-      const filteredUsers = usersData?.filter((u) => u.id !== currentUserId) || [];
-      setUsers(filteredUsers);
+      console.log(JSON.stringify(data, null, 2));
 
-      // 自分が関係している全 friend_requests を取得（sender または receiver）
-      const { data: requestsData } = await supabase
+      if (error) throw new Error(error.message);
+
+      // 型アサーション
+      const usersData = data as unknown as RawUser[] | null;
+
+      if (!usersData) {
+        setUsers([]);
+        return;
+      }
+
+      const mappedUsers: UserProfile[] = usersData.map((u) => {
+        return {
+          user_id: u.id,
+          nickname: u.user_profiles?.nickname ?? `User1(${u.id.slice(0, 6)})`,
+        };
+      });
+
+      setUsers(mappedUsers);
+
+      // フレンドリクエスト取得
+      const { data: requestsData, error: requestsError } = await supabase
         .from('friend_requests')
-        .select('sender_id, receiver_id, status')
+        .select('id, sender_id, receiver_id, status')
         .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`);
 
-      if (requestsData) {
-        const sentMap: Record<string, string> = {};
-        const receivedMap: Record<string, string> = {};
+      if (requestsError) throw new Error(requestsError.message);
 
-        requestsData.forEach((req) => {
-          if (req.sender_id === currentUserId) {
-            // 自分が送った申請
-            sentMap[req.receiver_id] = req.status;
-          } else if (req.receiver_id === currentUserId) {
-            // 自分が受け取った申請
-            receivedMap[req.sender_id] = req.status;
-          }
-        });
+      const sentMap: Record<string, FriendRequest['status']> = {};
+      const receivedMap: Record<string, FriendRequest['status']> = {};
 
-        setSentRequests(sentMap);
-        setReceivedRequests(receivedMap);
-      }
-    };
+      requestsData?.forEach((req: FriendRequest) => {
+        if (req.sender_id === currentUserId) {
+          sentMap[req.receiver_id] = req.status;
+        } else if (req.receiver_id === currentUserId) {
+          receivedMap[req.sender_id] = req.status;
+        }
+      });
 
-    fetchData();
+      setSentRequests(sentMap);
+      setReceivedRequests(receivedMap);
+    } catch (err: any) {
+      setError(err.message || 'データの取得に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentUserId]);
 
-  const handleRequest = async (userId: string) => {
-    const { error } = await sendFriendRequest(currentUserId, userId);
-    if (!error) {
-      alert('友だち申請を送りました');
-      setSentRequests((prev) => ({ ...prev, [userId]: 'pending' }));
-    }
-  };
+  useEffect(() => {
+    fetchData();
 
-  const handleRemoveFriend = async (friendId: string) => {
-    if (!confirm('本当にフレンドを外しますか？')) return;
+    // リアルタイムサブスクリプション
+    const subscription = supabase
+      .channel('friend_requests')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'friend_requests',
+          filter: `sender_id=eq.${currentUserId},receiver_id=eq.${currentUserId}`,
+        },
+        () => fetchData()
+      )
+      .subscribe();
 
-    const { error } = await unfriend(currentUserId, friendId);
-    if (error) {
-      alert('フレンド解除に失敗しました');
-      return;
-    }
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [fetchData, currentUserId]);
 
-    // ローカル state 更新
-    setSentRequests((prev) => {
-      const copy = { ...prev };
-      delete copy[friendId];
-      return copy;
-    });
-    setReceivedRequests((prev) => {
-      const copy = { ...prev };
-      delete copy[friendId];
-      return copy;
-    });
+  // フレンドリクエスト送信
+  const handleRequest = useCallback(
+    async (userId: string) => {
+      try {
+        setIsLoading(true);
+        const { error } = await sendFriendRequest(currentUserId, userId);
+        if (error) throw new Error(error.message);
+        alert('友だち申請を送りました');
+        setSentRequests((prev) => ({ ...prev, [userId]: 'pending' }));
+      } catch (err: any) {
+        alert(err.message || '友だち申請に失敗しました');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentUserId]
+  );
 
-    alert('フレンドを外しました');
-  };
+  // フレンド解除
+  const handleRemoveFriend = useCallback(
+    async (friendId: string) => {
+      if (!confirm('本当にフレンドを外しますか？')) return;
+
+      try {
+        setIsLoading(true);
+        const { error } = await unfriend(currentUserId, friendId);
+        if (error) throw new Error(error.message);
+
+        setSentRequests((prev) => {
+          const copy = { ...prev };
+          delete copy[friendId];
+          return copy;
+        });
+        setReceivedRequests((prev) => {
+          const copy = { ...prev };
+          delete copy[friendId];
+          return copy;
+        });
+
+        alert('フレンドを外しました');
+      } catch (err: any) {
+        alert(err.message || 'フレンド解除に失敗しました');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [currentUserId]
+  );
 
   return (
-    <div>
-      <ul className="space-y-2">
-        {users.map((u) => {
-          const sentStatus = sentRequests[u.id]; // 自分が送った申請状況
-          const receivedStatus = receivedRequests[u.id]; // 自分が受け取った申請状況
-          const name = u.user_profiles?.nickname || u.email;
+    <div className="container mx-auto p-4">
+      {isLoading && (
+        <div className="flex items-center justify-center py-4">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+          <span className="text-sm text-gray-500">読み込み中...</span>
+        </div>
+      )}
+      {error && <div className="text-center py-4 text-red-500">{error}</div>}
+      <ul className="space-y-2 max-w-md mx-auto">
+        {users.map((user) => {
+          const sentStatus = sentRequests[user.user_id];
+          const receivedStatus = receivedRequests[user.user_id];
           const isFriend = sentStatus === 'accepted' || receivedStatus === 'accepted';
 
           return (
             <li
-              key={u.id}
-              className={`flex items-center justify-between border p-3 rounded shadow-sm max-w-xs mx-auto
-              ${isFriend ? 'bg-gray-100' : sentStatus === 'pending' || receivedStatus === 'pending' ? 'bg-yellow-50' : 'bg-white'}`}
+              key={user.user_id}
+              className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg shadow-sm hover:bg-gray-100 transition-colors ${
+                isFriend
+                  ? 'border-l-4 border-green-500'
+                  : sentStatus === 'pending' || receivedStatus === 'pending'
+                    ? 'border-l-4 border-yellow-500'
+                    : 'border-l-4 border-gray-200'
+              }`}
             >
-              <span className="text-sm truncate">{name}</span>
-
-              {/* 状態表示 */}
-              {sentStatus === 'pending' && (
-                <span className="text-xs text-gray-500 ml-2">Pending</span>
-              )}
-              {receivedStatus === 'pending' && (
-                <span className="text-xs text-blue-600 ml-2">Pending approval</span>
-              )}
-              {isFriend && <span className="text-xs text-gray-600 ml-2">Friend</span>}
-              {sentStatus === 'rejected' && (
-                <button
-                  className="text-xs bg-gray-500 text-white px-3 py-1 rounded ml-2"
-                  onClick={() => handleRequest(u.id)}
-                >
-                  再申請
-                </button>
-              )}
-              {!sentStatus && !receivedStatus && (
-                <button
-                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded ml-2"
-                  onClick={() => handleRequest(u.id)}
-                >
-                  申請
-                </button>
-              )}
-
-              {/* 追加: フレンド解除ボタン */}
-              {isFriend && (
-                <button
-                  className="text-xs bg-red-500 text-white px-3 py-1 rounded ml-2"
-                  onClick={() => handleRemoveFriend(u.id)}
-                >
-                  友達解除
-                </button>
-              )}
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-xs font-medium text-blue-600">
+                    {user.nickname.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-gray-900 truncate">{user.nickname}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {sentStatus === 'pending' && <span className="text-xs text-gray-500">申請中</span>}
+                {receivedStatus === 'pending' && (
+                  <span className="text-xs text-blue-600">承認待ち</span>
+                )}
+                {isFriend && <span className="text-xs text-green-600">フレンド</span>}
+                {sentStatus === 'rejected' && (
+                  <button
+                    onClick={() => handleRequest(user.user_id)}
+                    disabled={isLoading}
+                    className="text-xs bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    aria-label={`ユーザー ${user.nickname} に再申請`}
+                  >
+                    再申請
+                  </button>
+                )}
+                {!sentStatus && !receivedStatus && (
+                  <button
+                    onClick={() => handleRequest(user.user_id)}
+                    disabled={isLoading}
+                    className="text-xs bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    aria-label={`ユーザー ${user.nickname} に申請`}
+                  >
+                    申請
+                  </button>
+                )}
+                {isFriend && (
+                  <button
+                    onClick={() => handleRemoveFriend(user.user_id)}
+                    disabled={isLoading}
+                    className="text-xs bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    aria-label={`ユーザー ${user.nickname} をフレンド解除`}
+                  >
+                    友達解除
+                  </button>
+                )}
+              </div>
             </li>
           );
         })}

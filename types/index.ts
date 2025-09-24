@@ -19,7 +19,8 @@ export interface UserProfile {
 export interface RawUser {
   id: string;
   email: string;
-  user_profiles?: {
+  user_profiles: {
+    user_id: string;
     nickname?: string | null;
   } | null;
 }
