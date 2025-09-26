@@ -17,9 +17,12 @@ const messaging = firebase.messaging();
 
 // バックグラウンド通知受信
 messaging.onBackgroundMessage(async (payload) => {
+  const { title, body } = payload.data || {};
   const notificationTitle = payload.notification?.title || '通知';
   const notificationOptions = {
-    body: payload.notification?.body || '',
+    title: title,
+    body: body,
+    // body: payload.notification?.body || '',
     icon: '/icons/icon-192.png',
     data: payload.data || {},
   };

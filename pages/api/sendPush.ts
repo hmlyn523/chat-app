@@ -36,11 +36,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'No tokens found' });
     }
 
+    // dataの値をすべて文字列に変換
     const stringifiedData = Object.fromEntries(
       Object.entries(data || {}).map(([k, v]) => [k, String(v)])
     );
 
     const registrationTokens = tokens.map((t) => t.fcm_token);
+
+    console.log('------------> title:', title);
+    console.log('------------> body:', body);
+    console.log('------------> stringifiedData:', stringifiedData);
+    console.log('------------> chatId:', chatId);
 
     const message: admin.messaging.MulticastMessage = {
       tokens: registrationTokens,
@@ -49,33 +55,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       //   body,
       // },
       data: {
+        title,
+        body,
         ...stringifiedData, // 既存のデータ
         click_action: `/chat/${chatId}`,
       },
-      android: {
-        notification: {
-          title,
-          body,
-          channelId: 'chat_messages',
-          priority: 'high',
-          defaultSound: true,
-        },
-        data: {
-          ...stringifiedData, // 既存のデータ
-          click_action: `/chat/${chatId}`,
-        },
-      },
-      apns: {
-        payload: {
-          aps: {
-            alert: { title, body },
-            sound: 'default',
-            badge: 1,
-          },
-          ...stringifiedData,
-          click_action: `/chat/${chatId}`,
-        },
-      },
+      // // android: {
+      //   notification: {
+      //     title,
+      //     body,
+      //     channelId: 'chat_messages',
+      //     priority: 'high',
+      //     defaultSound: true,
+      //   },
+      //   data: {
+      //     ...stringifiedData, // 既存のデータ
+      //     click_action: `/chat/${chatId}`,
+      //   },
+      // },
+      // apns: {
+      //   payload: {
+      //     aps: {
+      //       alert: { title: title, body: body },
+      //       sound: 'default',
+      //       badge: 1,
+      //     },
+      //     ...stringifiedData,
+      //     // click_action: `/chat/${chatId}`,
+      //   },
+      // },
     };
 
     try {
