@@ -33,3 +33,13 @@ self.addEventListener('notificationclick', function (event) {
   const url = event.notification.data?.click_action || '/';
   event.waitUntil(clients.openWindow(url));
 });
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
