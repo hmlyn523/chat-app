@@ -17,7 +17,7 @@ const messaging = firebase.messaging();
 
 // バックグラウンド通知受信
 messaging.onBackgroundMessage(async (payload) => {
-  const { title, body, click_action } = payload.data || {};
+  const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
   // 現在開いているタブ一覧を取得
@@ -26,12 +26,11 @@ messaging.onBackgroundMessage(async (payload) => {
     includeUncontrolled: true,
   });
 
-  // 例えば click_action が `/chat/123` なら
-  const targetChatUrl = click_action ? `${click_action}` : null;
+  const targetChatId = chat_id;
 
   // 開いているタブの URL に同じチャットIDが含まれていたら通知しない
-  const isChatOpen = targetChatUrl
-    ? clientList.some((client) => client.url.includes(targetChatUrl))
+  const isChatOpen = targetChatId
+    ? clientList.some((client) => client.url.includes(`/chat/${targetChatId}`))
     : false;
 
   if (isChatOpen) {
@@ -52,7 +51,7 @@ messaging.onBackgroundMessage(async (payload) => {
 // 通知クリック時の遷移
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const url = event.notification.data?.click_action || '/';
+  const url = event.notification.data?.chat_id || '/';
   event.waitUntil(clients.openWindow(url));
 });
 

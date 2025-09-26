@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         body,
         ...stringifiedData, // 既存のデータ
-        click_action: `/chat/${chatId}`,
+        chat_id: chatId,
       },
       // // android: {
       //   notification: {
@@ -71,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       //   },
       //   data: {
       //     ...stringifiedData, // 既存のデータ
-      //     click_action: `/chat/${chatId}`,
+      //     chat_id: chatId,
       //   },
       // },
       // apns: {
@@ -82,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       //       badge: 1,
       //     },
       //     ...stringifiedData,
-      //     // click_action: `/chat/${chatId}`,
+      //     chat_id: chatId,
       //   },
       // },
     };
