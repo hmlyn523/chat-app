@@ -27,14 +27,25 @@ messaging.onBackgroundMessage(async (payload) => {
   });
 
   const targetChatId = chat_id;
+  const targetPathSegment = `/chat/${targetChatId}`;
 
-  // 開いているタブの URL に同じチャットIDが含まれていたら通知しない
+  // デバッグ用ログを追加
+  console.log('--- Notification Debug Start ---');
+  console.log('Target Chat ID:', targetChatId);
+  console.log('Target Path Segment:', targetPathSegment);
+
+  // 開いているタブ一覧のURLと、ターゲットパスの確認
   const isChatOpen = targetChatId
-    ? clientList.some((client) => client.url.includes(`/chat/${targetChatId}`))
+    ? clientList.some((client) => {
+        console.log('Client URL:', client.url); // ★開いているタブのURLを正確に出力
+        const isMatch = client.url.includes(targetPathSegment);
+        console.log('Does URL include target path?', isMatch);
+        return isMatch;
+      })
     : false;
 
   if (isChatOpen) {
-    console.log('同じチャットが開かれているので通知しません:', targetChatUrl);
+    console.log('同じチャットが開かれているので通知しません:', targetChatId);
     return;
   }
 
