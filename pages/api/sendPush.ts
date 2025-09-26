@@ -44,10 +44,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const message: admin.messaging.MulticastMessage = {
       tokens: registrationTokens,
-      notification: {
-        title,
-        body,
-      },
+      // notification: {
+      //   title,
+      //   body,
+      // },
       data: {
         ...stringifiedData, // 既存のデータ
         click_action: `/chat/${chatId}`,
