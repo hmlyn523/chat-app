@@ -48,10 +48,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         body,
       },
-      data: {
-        ...stringifiedData, // 既存のデータ
-        click_action: `/chat/${chatId}`,
-      },
+      // data: {
+      //   ...stringifiedData, // 既存のデータ
+      //   click_action: `/chat/${chatId}`,
+      // },
       android: {
         notification: {
           title,
