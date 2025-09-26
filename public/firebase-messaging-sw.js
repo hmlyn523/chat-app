@@ -5,12 +5,18 @@ importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-comp
 
 // Firebase プロジェクト設定（直接値を記入）
 firebase.initializeApp({
-  apiKey: 'AIzaSyDTjOeukQktTxnDPwfYSMs3XKuffhJmam0',
-  authDomain: 'chat-app-aa72c.firebaseapp.com',
-  projectId: 'chat-app-aa72c',
-  storageBucket: 'chat-app-aa72c.firebasestorage.app',
-  messagingSenderId: '37904078789',
-  appId: '1:37904078789:web:d85259a03cf1fdcbb01dac',
+  // apiKey: 'AIzaSyDTjOeukQktTxnDPwfYSMs3XKuffhJmam0',
+  // authDomain: 'chat-app-aa72c.firebaseapp.com',
+  // projectId: 'chat-app-aa72c',
+  // storageBucket: 'chat-app-aa72c.firebasestorage.app',
+  // messagingSenderId: '37904078789',
+  // appId: '1:37904078789:web:d85259a03cf1fdcbb01dac',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 });
 
 const messaging = firebase.messaging();
@@ -22,7 +28,6 @@ messaging.onBackgroundMessage(async (payload) => {
   const notificationOptions = {
     title: title,
     body: body,
-    // body: payload.notification?.body || '',
     icon: '/icons/icon-192.png',
     data: payload.data || {},
   };
