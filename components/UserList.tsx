@@ -35,6 +35,7 @@ export default function UserList({ currentUserId }: UserListProps) {
       if (error) throw new Error(error.message);
 
       // 型アサーション
+      // unknown: Supabase の data 型が any[] | null なので unknown 経由で RawUser[] | null に変換
       const usersData = data as unknown as RawUser[] | null;
 
       if (!usersData) {
