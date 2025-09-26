@@ -60,7 +60,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           priority: 'high',
           defaultSound: true,
         },
-        data: data || {},
+        data: {
+          ...stringifiedData, // 既存のデータ
+          click_action: `/chat/${chatId}`,
+        },
       },
       apns: {
         payload: {
@@ -69,7 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sound: 'default',
             badge: 1,
           },
-          ...data,
+          ...stringifiedData,
+          click_action: `/chat/${chatId}`,
         },
       },
     };
