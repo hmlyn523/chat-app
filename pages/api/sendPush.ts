@@ -48,10 +48,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         title,
         body,
       },
-      // data: {
-      //   ...stringifiedData, // 既存のデータ
-      //   click_action: `/chat/${chatId}`,
-      // },
+      data: {
+        ...stringifiedData, // 既存のデータ
+        click_action: `/chat/${chatId}`,
+      },
       android: {
         notification: {
           title,
@@ -60,10 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           priority: 'high',
           defaultSound: true,
         },
-        data: {
-          ...stringifiedData, // 既存のデータ
-          click_action: `/chat/${chatId}`,
-        },
+        data: data || {},
       },
       apns: {
         payload: {
@@ -72,8 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             sound: 'default',
             badge: 1,
           },
-          ...stringifiedData,
-          click_action: `/chat/${chatId}`,
+          ...data,
         },
       },
     };
