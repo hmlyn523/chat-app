@@ -46,7 +46,7 @@ messaging.onBackgroundMessage(async (payload) => {
     data: payload.data || {},
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // 通知クリック時の遷移
