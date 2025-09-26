@@ -2,7 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
 import { supabase } from 'lib/supabaseClient';
 
+// Firebase Admin SDKの初期化
 if (!admin.apps.length) {
+  // 環境変数のチェック
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
@@ -12,25 +14,27 @@ if (!admin.apps.length) {
   });
 }
 
+// POST /api/sendPush
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  /// method check
   if (req.method !== 'POST') return res.status(405).end();
 
   const { userId, title, body, data, chatId } = req.body;
 
-  // バリデーション
+  // 必須パラメータのチェック
   if (!userId || !title || !body || !chatId) {
     console.error('Missing parameters:', { userId, title, body, chatId });
     return res.status(400).json({ error: 'Missing parameters' });
   }
 
-  console.log('Sending push notification to user:', userId);
-
   try {
+    // 指定ユーザーのトークンをDBから取得
     const { data: tokens, error } = await supabase
       .from('push_tokens')
       .select('fcm_token')
       .eq('user_id', userId);
 
+    // トークンがない場合は終了
     if (error || !tokens?.length) {
       console.error('No tokens found for user:', userId, error);
       return res.status(404).json({ error: 'No tokens found' });
@@ -41,13 +45,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       Object.entries(data || {}).map(([k, v]) => [k, String(v)])
     );
 
+    // トークンの配列を作成
     const registrationTokens = tokens.map((t) => t.fcm_token);
 
-    console.log('------------> title:', title);
-    console.log('------------> body:', body);
-    console.log('------------> stringifiedData:', stringifiedData);
-    console.log('------------> chatId:', chatId);
-
+    // メッセージの作成
     const message: admin.messaging.MulticastMessage = {
       tokens: registrationTokens,
       // notification: {
@@ -87,6 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     try {
+      // メッセージの送信
       const response = await admin.messaging().sendEachForMulticast(message);
       console.log('Successfully sent to devices:', response.successCount);
       console.log('Failed to send to devices:', response.failureCount);
@@ -94,14 +96,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // 無効トークンの削除
       const invalidTokens: string[] = [];
       response.responses.forEach((resp, idx) => {
+        // トークンが無効な場合、削除リストに追加
         if (!resp.success && resp.error?.code === 'messaging/registration-token-not-registered') {
           invalidTokens.push(registrationTokens[idx]);
         }
       });
+      // 無効トークンがあればDBから削除
       if (invalidTokens.length > 0) {
         await supabase.from('push_tokens').delete().in('fcm_token', invalidTokens);
       }
 
+      // 結果を返す
       return res.status(200).json({
         success: true,
         sent: response.successCount,
