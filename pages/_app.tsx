@@ -117,9 +117,9 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
 
   useEffect(() => {
     listenForSWUpdate(() => {
-      if (confirm('新しいバージョンがあります。更新しますか？')) {
-        window.location.reload();
-      }
+      // if (confirm('新しいバージョンがあります。更新しますか？')) {
+      window.location.reload();
+      // }
     });
   }, []);
 

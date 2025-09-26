@@ -13,7 +13,7 @@ export function listenForSWUpdate(onUpdate: () => void) {
       newWorker.addEventListener('statechange', () => {
         // install → waiting → activated と変化していく
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // 🔑 ここでのみ「新バージョンが利用可能」と判断
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
           onUpdate();
         }
       });
