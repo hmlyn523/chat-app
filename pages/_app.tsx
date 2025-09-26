@@ -123,6 +123,17 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
     });
   }, []);
 
+  useEffect(() => {
+    // Service Worker が切り替わったら更新を適用
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('Service Worker が切り替わりました（更新完了）');
+        alert('アプリが更新されました。ページを再読み込みします。');
+        window.location.reload(); // 必要に応じてページをリロード
+      });
+    }
+  }, []);
+
   return (
     <SessionContextProvider
       supabaseClient={supabaseClient}
