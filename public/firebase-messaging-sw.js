@@ -23,8 +23,28 @@ const messaging = firebase.messaging();
 
 // バックグラウンド通知受信
 messaging.onBackgroundMessage(async (payload) => {
-  const { title, body } = payload.data || {};
+  const { title, body, click_action } = payload.data || {};
   const notificationTitle = payload.notification?.title || '通知';
+
+  // 現在開いているタブ一覧を取得
+  const clientList = await clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+
+  // 例えば click_action が `/chat/123` なら
+  const targetChatUrl = click_action ? `/chat/${click_action}` : null;
+
+  // 開いているタブの URL に同じチャットIDが含まれていたら通知しない
+  const isChatOpen = targetChatUrl
+    ? clientList.some((client) => client.url.includes(targetChatUrl))
+    : false;
+
+  if (isChatOpen) {
+    console.log('同じチャットが開かれているので通知しません:', targetChatUrl);
+    return;
+  }
+
   const notificationOptions = {
     title: title,
     body: body,
