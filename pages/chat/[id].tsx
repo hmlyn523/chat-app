@@ -44,8 +44,6 @@ export default function ChatRoom() {
 
   const { endRef, scrollToBottom } = useSafeScroll();
 
-  const [isFocused, setIsFocused] = useState(true);
-
   const forceScrollToBottom = () => {
     const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement;
     if (container) {
@@ -266,15 +264,8 @@ export default function ChatRoom() {
             return updated;
           });
 
-          const isPageVisible = () =>
-            typeof document !== 'undefined' && !document.hidden && isFocused;
           const currentUserId = currentUserIdRef.current;
-          if (
-            currentUserId &&
-            newMessage.user_id !== currentUserId &&
-            isAtBottomRef.current &&
-            isPageVisible()
-          ) {
+          if (currentUserId && newMessage.user_id !== currentUserId && isAtBottomRef.current) {
             await markMessagesAsRead([newMessage.id], currentUserId);
           }
         }
@@ -325,18 +316,6 @@ export default function ChatRoom() {
       supabase.removeChannel(readsChannel);
     };
   }, [chatId]);
-
-  /// Android端末でチャット画面を開いたままホーム画面や他アプリに切り替えられたことを検知
-  useEffect(() => {
-    const onFocus = () => setIsFocused(true);
-    const onBlur = () => setIsFocused(false);
-    window.addEventListener('focus', onFocus);
-    window.addEventListener('blur', onBlur);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('blur', onBlur);
-    };
-  }, []);
 
   // messagesが更新されるたびに実行される。
   // 初回スクロール処理や、スクロール位置によって未読メッセージを既読にする処理を行う。
@@ -473,7 +452,7 @@ export default function ChatRoom() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              userId: member.id,
+              userId: member.user_profiles.user_id,
               title: senderName,
               body: input.length > 50 ? input.substring(0, 50) + '...' : input,
               chatId: chatId, // 通知クリック時にこのチャットルームに遷移
