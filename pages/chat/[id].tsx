@@ -44,6 +44,8 @@ export default function ChatRoom() {
 
   const { endRef, scrollToBottom } = useSafeScroll();
 
+  const [isActive, setIsActive] = useState(true);
+
   const forceScrollToBottom = () => {
     const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement;
     if (container) {
@@ -276,7 +278,12 @@ export default function ChatRoom() {
           });
 
           const currentUserId = currentUserIdRef.current;
-          if (currentUserId && newMessage.user_id !== currentUserId && isAtBottomRef.current) {
+          if (
+            currentUserId &&
+            newMessage.user_id !== currentUserId &&
+            isAtBottomRef.current &&
+            isActive
+          ) {
             await markMessagesAsRead([newMessage.id], currentUserId);
           }
         }
@@ -326,7 +333,7 @@ export default function ChatRoom() {
       supabase.removeChannel(messageChannel);
       supabase.removeChannel(readsChannel);
     };
-  }, [chatId]);
+  }, [chatId, isActive]);
 
   // messagesが更新されるたびに実行される。
   // 初回スクロール処理や、スクロール位置によって未読メッセージを既読にする処理を行う。
@@ -362,7 +369,7 @@ export default function ChatRoom() {
       isAtBottomRef.current = isAtBottom;
 
       // 👇 スクロールで下に着いたら未読メッセージを既読にする（オプション）
-      if (isAtBottom && currentUserIdRef.current && messages.length > 0) {
+      if (isAtBottom && currentUserIdRef.current && messages.length > 0 && isActive) {
         const unreadMessageIds = messages
           .filter(
             (m) =>
@@ -379,7 +386,7 @@ export default function ChatRoom() {
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, isActive]);
 
   // 初回のみ呼ばれる
   useEffect(() => {
@@ -414,6 +421,17 @@ export default function ChatRoom() {
 
       onMessageListener(messageHandler);
     }
+  }, []);
+
+  // visibilitychange でアクティブ状態を更新
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsActive(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // メッセージ送信
