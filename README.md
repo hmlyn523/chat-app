@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 24Chat
 
-## Getting Started
+## 🌟 特徴 / Features
 
-First, run the development server:
+- ⏰ **いつでも安心してチャットできる**  
+  メッセージは1日に一回、24時間以上前のデータが自動削除されるので、過去の発言がずっと残る心配なし
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 👤 **個人情報を気にせず参加可能**  
+  ニックネームだけで利用でき、名前やメールアドレスの登録不要
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 🗑️ **退会時も安心**  
+  退会すると自分のメッセージは全て削除され、プライバシーが守られる
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 技術スタック
 
-## Learn More
+| 技術       | 利用シーン          |
+| ---------- | ------------------- |
+| Next.js    | フロントエンド・SSR |
+| TypeScript | 型安全な開発        |
+| Supabase   | データベース・認証  |
+| Vercel     | デプロイ            |
+| Firebase   | プッシュ通知・認証  |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧩 開発手法
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 開発知識ほぼゼロからスタート
+- AI（ChatGPT / Gemini / Claude / Grok）を活用して開発
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📅 開発開始
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2025年6月28日(土) 13:34 初回コミット
+
+---
+
+## ⚙ 実行環境
+
+- データベース（Supabase）
+- デプロイ環境（Vercel）
+- クロンや通知設定が必要
