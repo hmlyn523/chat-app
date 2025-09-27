@@ -86,6 +86,17 @@ messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
+  let activeChatId = null;
+
+  self.addEventListener('message', (event) => {
+    if (event.data?.type === 'ACTIVE_CHAT') {
+      activeChatId = event.data.chatId;
+      console.log('アクティブなチャットID:', activeChatId);
+    }
+  });
+
+  console.log('アクティブなチャットID:', activeChatId);
+
   const clientList = await clients.matchAll({
     type: 'window',
     includeUncontrolled: true,
