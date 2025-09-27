@@ -15,42 +15,101 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// バックグラウンド通知受信
+// // バックグラウンド通知受信
+// messaging.onBackgroundMessage(async (payload) => {
+//   const { title, body, chat_id } = payload.data || {};
+//   const notificationTitle = payload.data?.title || '通知';
+
+//   // // 現在開いているタブ一覧を取得
+//   // const clientList = await clients.matchAll({
+//   //   type: 'window',
+//   //   includeUncontrolled: true,
+//   // });
+
+//   // const targetChatId = chat_id;
+//   // const targetPathSegment = `/chat/${targetChatId}`;
+
+//   // // デバッグ用ログを追加
+//   // console.log('--- Notification Debug Start ---');
+//   // console.log('Target Chat ID:', targetChatId);
+//   // console.log('Target Path Segment:', targetPathSegment);
+
+//   // // 開いているタブ一覧のURLと、ターゲットパスの確認
+//   // const isChatOpen = targetChatId
+//   //   ? clientList.some((client) => {
+//   //       console.log('Client URL:', client.url); // ★開いているタブのURLを正確に出力
+//   //       const isMatch = client.url.includes(targetPathSegment);
+//   //       console.log('Does URL include target path?', isMatch);
+//   //       return isMatch;
+//   //     })
+//   //   : false;
+
+//   // if (isChatOpen) {
+//   //   console.log('同じチャットが開かれているので通知しません:', targetChatId);
+//   //   return;
+//   // }
+
+//   const clientList = await clients.matchAll({
+//     type: 'window',
+//     includeUncontrolled: true,
+//   });
+
+//   // 💡 ここを修正して、全てのクライアントURLを確認します
+//   console.log('--- All Clients Found ---');
+//   let isChatOpen = false;
+
+//   for (const client of clientList) {
+//     console.log(`Client URL [${client.id}]:`, client.url); // 全てのURLを出力
+
+//     if (targetChatId && client.url.includes(`/chat/${targetChatId}`)) {
+//       isChatOpen = true;
+//     }
+//   }
+//   console.log('--- All Clients Found End ---');
+
+//   if (isChatOpen) {
+//     console.log('SUCCESS: Notification suppressed.');
+//     return;
+//   }
+
+//   const notificationOptions = {
+//     title: title,
+//     body: body,
+//     icon: '/icons/icon-192.png',
+//     data: payload.data || {},
+//   };
+
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
+
 messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
-  // 現在開いているタブ一覧を取得
   const clientList = await clients.matchAll({
     type: 'window',
     includeUncontrolled: true,
   });
 
-  const targetChatId = chat_id;
-  const targetPathSegment = `/chat/${targetChatId}`;
+  console.log('--- All Clients Found ---');
+  let isChatOpen = false;
 
-  // デバッグ用ログを追加
-  console.log('--- Notification Debug Start ---');
-  console.log('Target Chat ID:', targetChatId);
-  console.log('Target Path Segment:', targetPathSegment);
+  for (const client of clientList) {
+    console.log(`Client URL [${client.id}]:`, client.url);
 
-  // 開いているタブ一覧のURLと、ターゲットパスの確認
-  const isChatOpen = targetChatId
-    ? clientList.some((client) => {
-        console.log('Client URL:', client.url); // ★開いているタブのURLを正確に出力
-        const isMatch = client.url.includes(targetPathSegment);
-        console.log('Does URL include target path?', isMatch);
-        return isMatch;
-      })
-    : false;
+    if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
+      isChatOpen = true;
+      break;
+    }
+  }
+  console.log('--- All Clients Found End ---');
 
   if (isChatOpen) {
-    console.log('同じチャットが開かれているので通知しません:', targetChatId);
+    console.log('SUCCESS: Notification suppressed.');
     return;
   }
 
   const notificationOptions = {
-    title: title,
     body: body,
     icon: '/icons/icon-192.png',
     data: payload.data || {},
