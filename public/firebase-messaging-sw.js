@@ -91,7 +91,6 @@ messaging.onBackgroundMessage(async (payload) => {
     includeUncontrolled: true,
   });
 
-  console.log('--- All Clients Found ---');
   let isChatOpen = false;
 
   for (const client of clientList) {
@@ -102,10 +101,8 @@ messaging.onBackgroundMessage(async (payload) => {
       break;
     }
   }
-  console.log('--- All Clients Found End ---');
 
   if (isChatOpen) {
-    console.log('SUCCESS: Notification suppressed.');
     return;
   }
 

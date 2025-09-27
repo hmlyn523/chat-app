@@ -171,6 +171,10 @@ export default function ChatRoom() {
     //   これは Next.js の router.query が初期は undefined になることがあるため
     if (!chatId) return;
 
+    // 👇 BroadcastChannel をここで開く
+    const bc = new BroadcastChannel('chat');
+    bc.postMessage({ activeChatId: chatId }); // 入室時に通知
+
     if (messages.length > 0 && !didInitialScrollRef.current) {
       setTimeout(() => {
         scrollToBottom();
@@ -314,6 +318,10 @@ export default function ChatRoom() {
     return () => {
       supabase.removeChannel(messageChannel);
       supabase.removeChannel(readsChannel);
+
+      // ページを離れる時に null を送って閉じる
+      bc.postMessage({ activeChatId: null });
+      bc.close();
     };
   }, [chatId]);
 
