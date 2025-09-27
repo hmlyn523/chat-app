@@ -15,88 +15,25 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// // バックグラウンド通知受信
-// messaging.onBackgroundMessage(async (payload) => {
-//   const { title, body, chat_id } = payload.data || {};
-//   const notificationTitle = payload.data?.title || '通知';
-
-//   // // 現在開いているタブ一覧を取得
-//   // const clientList = await clients.matchAll({
-//   //   type: 'window',
-//   //   includeUncontrolled: true,
-//   // });
-
-//   // const targetChatId = chat_id;
-//   // const targetPathSegment = `/chat/${targetChatId}`;
-
-//   // // デバッグ用ログを追加
-//   // console.log('--- Notification Debug Start ---');
-//   // console.log('Target Chat ID:', targetChatId);
-//   // console.log('Target Path Segment:', targetPathSegment);
-
-//   // // 開いているタブ一覧のURLと、ターゲットパスの確認
-//   // const isChatOpen = targetChatId
-//   //   ? clientList.some((client) => {
-//   //       console.log('Client URL:', client.url); // ★開いているタブのURLを正確に出力
-//   //       const isMatch = client.url.includes(targetPathSegment);
-//   //       console.log('Does URL include target path?', isMatch);
-//   //       return isMatch;
-//   //     })
-//   //   : false;
-
-//   // if (isChatOpen) {
-//   //   console.log('同じチャットが開かれているので通知しません:', targetChatId);
-//   //   return;
-//   // }
-
-//   const clientList = await clients.matchAll({
-//     type: 'window',
-//     includeUncontrolled: true,
-//   });
-
-//   // 💡 ここを修正して、全てのクライアントURLを確認します
-//   console.log('--- All Clients Found ---');
-//   let isChatOpen = false;
-
-//   for (const client of clientList) {
-//     console.log(`Client URL [${client.id}]:`, client.url); // 全てのURLを出力
-
-//     if (targetChatId && client.url.includes(`/chat/${targetChatId}`)) {
-//       isChatOpen = true;
-//     }
-//   }
-//   console.log('--- All Clients Found End ---');
-
-//   if (isChatOpen) {
-//     console.log('SUCCESS: Notification suppressed.');
-//     return;
-//   }
-
-//   const notificationOptions = {
-//     title: title,
-//     body: body,
-//     icon: '/icons/icon-192.png',
-//     data: payload.data || {},
-//   };
-
-//   self.registration.showNotification(notificationTitle, notificationOptions);
-// });
-
+// FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
 messaging.onBackgroundMessage(async (payload) => {
+  // 通知の内容を取り出す
   const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
+  // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
   let activeChatId = null;
 
+  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
+  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
   self.addEventListener('message', (event) => {
     if (event.data?.type === 'ACTIVE_CHAT') {
       activeChatId = event.data.chatId;
-      console.log('アクティブなチャットID:', activeChatId);
     }
   });
 
-  console.log('アクティブなチャットID:', activeChatId);
-
+  // 開かれている全てのブラウザタブ/ウィンドウを取得
+  // includeUncontrolled: true → Service Worker の管理外でも取得する
   const clientList = await clients.matchAll({
     type: 'window',
     includeUncontrolled: true,
@@ -104,25 +41,36 @@ messaging.onBackgroundMessage(async (payload) => {
 
   let isChatOpen = false;
 
+  // 開いているタブのURLを調べて、「通知対象のチャット画面」が存在するか確認する
   for (const client of clientList) {
     console.log(`Client URL [${client.id}]:`, client.url);
 
+    // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
+    // そのチャットはすでに開かれていると判断できる
     if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
-      isChatOpen = true;
+      isChatOpen = true; // 該当のチャットがすでに開かれている
       break;
     }
   }
 
-  if (isChatOpen) {
+  // ここまでで2つの判定方法がある:
+  // 1. clients.matchAll でURLを調べる方法
+  // 2. postMessage で送られた activeChatId を利用する方法
+  //
+  // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
+  if (isChatOpen || chat_id === activeChatId) {
+    console.log('同じチャットが開かれているので通知しません:', chat_id);
     return;
   }
 
+  // もし対象のチャットが開かれていなければ、通知を表示する
   const notificationOptions = {
-    body: body,
-    icon: '/icons/icon-192.png',
-    data: payload.data || {},
+    body: body, // 通知本文
+    icon: '/icons/icon-192.png', // 通知に表示するアイコン
+    data: payload.data || {}, // 通知クリック時に利用する追加データ
   };
 
+  // ブラウザに通知を表示
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
