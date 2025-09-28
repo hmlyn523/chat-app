@@ -46,12 +46,12 @@ export default function ChatRoom() {
 
   const [isActive, setIsActive] = useState(true);
 
-  const forceScrollToBottom = () => {
-    const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement;
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  };
+  // const forceScrollToBottom = () => {
+  //   const container = document.querySelector('.flex-1.overflow-y-auto') as HTMLElement;
+  //   if (container) {
+  //     container.scrollTop = container.scrollHeight;
+  //   }
+  // };
 
   // 既読登録用関数（渡されたメッセージIDの配列を既読登録）
   const markMessagesAsRead = async (messageIds: string[], userId: string) => {
@@ -423,6 +423,25 @@ export default function ChatRoom() {
     }
   }, []);
 
+  // // ★FCM メッセージ受信リスナー（現在のチャットなら通知を出さない）
+  // useEffect(() => {
+  //   if (typeof window === 'undefined') return;
+
+  //   const messageHandler = (payload: any) => {
+  //     const msgChatId = payload.data?.chatId;
+  //     const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
+
+  //     if (!isCurrentChat) {
+  //       new Notification(payload.notification?.title || '新着メッセージ', {
+  //         body: payload.notification?.body || '',
+  //         icon: '/icons/icon-192.png',
+  //       });
+  //     }
+  //   };
+
+  //   onMessageListener(messageHandler);
+  // }, []);
+
   // visibilitychange でアクティブ状態を更新
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -433,6 +452,18 @@ export default function ChatRoom() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+
+  // // ★現在開いているチャットIDを Service Worker に送信
+  // useEffect(() => {
+  //   if (!chatId) return;
+
+  //   if (navigator.serviceWorker.controller) {
+  //     navigator.serviceWorker.controller.postMessage({
+  //       type: 'ACTIVE_CHAT',
+  //       chatId: chatId,
+  //     });
+  //   }
+  // }, [chatId]);
 
   // メッセージ送信
   const sendMessage = async () => {
@@ -648,7 +679,7 @@ export default function ChatRoom() {
             tabIndex={-1}
             value="🖋️"
             onClick={sendMessage}
-            className="bg--300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-gray-400 w-12"
+            className="bg-gray-300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-gray-400 w-12"
           />
         </div>
       </div>
