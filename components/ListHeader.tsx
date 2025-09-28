@@ -93,14 +93,14 @@ export default function ListHeader() {
                 onClick={goToProfile}
                 className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
               >
-                プロフィール
+                ニックネーム変更
               </button>
-              <button
+              {/* <button
                 onClick={handleLogout}
                 className="w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-600"
               >
                 ログアウト
-              </button>
+              </button> */}
               <button
                 onClick={handleDeleteAccount}
                 className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
