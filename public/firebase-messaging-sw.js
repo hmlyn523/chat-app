@@ -18,29 +18,51 @@ const messaging = firebase.messaging();
 // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
 let activeChatId = null;
 
+// フロントからのメッセージを待ち受ける
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'ACTIVE_CHAT') {
+    activeChatId = event.data.chatId;
+    console.log('[SW] アクティブなチャットID更新:', activeChatId);
+  }
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // FCMからバックグラウンド通知を受け取る
 messaging.onBackgroundMessage(async (payload) => {
   const notificationTitle = payload.notification?.title || payload.data?.title || '通知';
-  const data = payload.data || {};
-
   const body = payload.notification?.body || payload.data?.body || '';
-  const chat_id = data.chat_id;
+  const chat_id = payload.data?.chat_id;
 
+  console.log('[SW] 受信ペイロード:', payload);
+  console.log('[SW] 現在の activeChatId:', activeChatId);
+
+  // 開いているタブ一覧を取得
   const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
   let isChatOpen = false;
   for (const client of clientList) {
-    if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
-      isChatOpen = true;
-      break;
+    try {
+      const pathname = new URL(client.url).pathname;
+      console.log('[SW] Client URL:', pathname);
+
+      if (chat_id && pathname === `/chat/${chat_id}`) {
+        isChatOpen = true;
+        break;
+      }
+    } catch (e) {
+      console.warn('[SW] URL解析失敗:', client.url);
     }
   }
 
+  // 同じチャットが開かれている場合は通知を出さない
   if (isChatOpen || chat_id === activeChatId) {
-    console.log('同じチャットが開かれているので通知しません:', chat_id);
+    console.log('[SW] 同じチャットが開かれているので通知しません:', chat_id);
     return;
   }
 
+  // 通知を表示
   self.registration.showNotification(notificationTitle, {
     body,
     icon: '/icons/icon-192.png',
@@ -56,24 +78,7 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(clients.openWindow(url));
 });
 
-// メッセージイベントを監視
-self.addEventListener('message', (event) => {
-  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
-  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
-  if (event.data?.type === 'ACTIVE_CHAT') {
-    activeChatId = event.data.chatId;
-    console.log('アクティブなチャットID更新:', activeChatId);
-  }
-  // → フロントから { type: 'SKIP_WAITING' } が送られてきたら
-  //   skipWaiting() を実行して古いSWを待たずに即座に新しいSWに切り替える
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-// activate イベント発火時に実行
-// → claim() により既存のすべてのページを新しいSWの管理下に置く
-//   （ユーザーがページをリロードしなくても新しいSWを適用できる）
+// activate イベント発火時
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
