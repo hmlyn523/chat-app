@@ -15,78 +15,65 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
+// 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
+let activeChatId = null;
+
+// FCMからバックグラウンド通知を受け取る
 messaging.onBackgroundMessage(async (payload) => {
-  // 通知の内容を取り出す
-  const { title, body, chat_id } = payload.data || {};
-  const notificationTitle = payload.data?.title || '通知';
+  const notificationTitle = payload.notification?.title || payload.data?.title || '通知';
+  const data = payload.data || {};
 
-  // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
-  let activeChatId = null;
+  const body = payload.notification?.body || payload.data?.body || '';
+  const chat_id = data.chat_id;
 
-  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
-  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
-  self.addEventListener('message', (event) => {
-    if (event.data?.type === 'ACTIVE_CHAT') {
-      activeChatId = event.data.chatId;
-    }
-  });
-
-  // 開かれている全てのブラウザタブ/ウィンドウを取得
-  // includeUncontrolled: true → Service Worker の管理外でも取得する
-  const clientList = await clients.matchAll({
-    type: 'window',
-    includeUncontrolled: true,
-  });
+  const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
   let isChatOpen = false;
-
-  // 開いているタブのURLを調べて、「通知対象のチャット画面」が存在するか確認する
   for (const client of clientList) {
-    console.log(`Client URL [${client.id}]:`, client.url);
-
-    // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
-    // そのチャットはすでに開かれていると判断できる
     if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
-      isChatOpen = true; // 該当のチャットがすでに開かれている
+      isChatOpen = true;
       break;
     }
   }
 
-  // ここまでで2つの判定方法がある:
-  // 1. clients.matchAll でURLを調べる方法
-  // 2. postMessage で送られた activeChatId を利用する方法
-  //
-  // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
   if (isChatOpen || chat_id === activeChatId) {
     console.log('同じチャットが開かれているので通知しません:', chat_id);
     return;
   }
 
-  // もし対象のチャットが開かれていなければ、通知を表示する
-  const notificationOptions = {
-    body: body, // 通知本文
-    icon: '/icons/icon-192.png', // 通知に表示するアイコン
-    data: payload.data || {}, // 通知クリック時に利用する追加データ
-  };
-
-  // ブラウザに通知を表示
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(notificationTitle, {
+    body,
+    icon: '/icons/icon-192.png',
+    data: payload.data || {},
+  });
 });
 
 // 通知クリック時の遷移
-self.addEventListener('notificationclick', function (event) {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = event.notification.data?.chat_id || '/';
+  const chat_id = event.notification.data?.chat_id;
+  const url = chat_id ? `/chat/${chat_id}` : '/';
   event.waitUntil(clients.openWindow(url));
 });
 
+// メッセージイベントを監視
 self.addEventListener('message', (event) => {
+  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
+  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
+  if (event.data?.type === 'ACTIVE_CHAT') {
+    activeChatId = event.data.chatId;
+    console.log('アクティブなチャットID更新:', activeChatId);
+  }
+  // → フロントから { type: 'SKIP_WAITING' } が送られてきたら
+  //   skipWaiting() を実行して古いSWを待たずに即座に新しいSWに切り替える
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
+// activate イベント発火時に実行
+// → claim() により既存のすべてのページを新しいSWの管理下に置く
+//   （ユーザーがページをリロードしなくても新しいSWを適用できる）
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
