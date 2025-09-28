@@ -15,43 +15,76 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 現在アクティブなチャットID
-let activeChatId = null;
-
-// フロントから送られた「現在のチャットID」を受け取る
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'ACTIVE_CHAT') {
-    activeChatId = event.data.chatId;
-    console.log('[SW] Active chat updated:', activeChatId);
-  }
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
+// FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
 messaging.onBackgroundMessage(async (payload) => {
-  const notificationTitle = payload.notification?.title || payload.data?.title || '通知';
-  const body = payload.notification?.body || payload.data?.body || '';
-  const chatId = payload.data?.chat_id;
+  // 通知の内容を取り出す
+  const { title, body, chat_id } = payload.data || {};
+  const notificationTitle = payload.data?.title || '通知';
 
-  // 同じチャットの場合は通知しない
-  if (chatId && chatId === activeChatId) {
-    console.log('[SW] 同じチャットなので通知をスキップ:', chatId);
+  // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
+  let activeChatId = null;
+
+  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
+  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
+  self.addEventListener('message', (event) => {
+    if (event.data?.type === 'ACTIVE_CHAT') {
+      activeChatId = event.data.chatId;
+    }
+  });
+
+  // 開かれている全てのブラウザタブ/ウィンドウを取得
+  // includeUncontrolled: true → Service Worker の管理外でも取得する
+  const clientList = await clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+
+  let isChatOpen = false;
+
+  // 開いているタブのURLを調べて、「通知対象のチャット画面」が存在するか確認する
+  for (const client of clientList) {
+    console.log(`Client URL [${client.id}]:`, client.url);
+
+    // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
+    // そのチャットはすでに開かれていると判断できる
+    if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
+      isChatOpen = true; // 該当のチャットがすでに開かれている
+      break;
+    }
+  }
+
+  // ここまでで2つの判定方法がある:
+  // 1. clients.matchAll でURLを調べる方法
+  // 2. postMessage で送られた activeChatId を利用する方法
+  //
+  // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
+  if (isChatOpen || chat_id === activeChatId) {
+    console.log('同じチャットが開かれているので通知しません:', chat_id);
     return;
   }
 
-  self.registration.showNotification(notificationTitle, {
-    body,
-    icon: '/icons/icon-192.png',
-    data: payload.data || {},
-  });
+  // もし対象のチャットが開かれていなければ、通知を表示する
+  const notificationOptions = {
+    body: body, // 通知本文
+    icon: '/icons/icon-192.png', // 通知に表示するアイコン
+    data: payload.data || {}, // 通知クリック時に利用する追加データ
+  };
+
+  // ブラウザに通知を表示
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-self.addEventListener('notificationclick', (event) => {
+// 通知クリック時の遷移
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const chatId = event.notification.data?.chatId;
-  const url = chatId ? `/chat/${chatId}` : '/';
+  const url = event.notification.data?.chat_id || '/';
   event.waitUntil(clients.openWindow(url));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
