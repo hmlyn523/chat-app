@@ -199,7 +199,7 @@ export default function UserList({ currentUserId }: UserListProps) {
                     className="text-xs bg-gray-500 text-white px-3 py-1 rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label={`ユーザー ${user.nickname} に再申請`}
                   >
-                    再申請
+                    再申
                   </button>
                 )}
                 {!sentStatus && !receivedStatus && (
@@ -219,7 +219,7 @@ export default function UserList({ currentUserId }: UserListProps) {
                     className="text-xs bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label={`ユーザー ${user.nickname} をフレンド解除`}
                   >
-                    友達解除
+                    解除
                   </button>
                 )}
               </div>
