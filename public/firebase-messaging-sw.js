@@ -32,7 +32,7 @@ self.addEventListener('message', (event) => {
 messaging.onBackgroundMessage(async (payload) => {
   const notificationTitle = payload.notification?.title || payload.data?.title || '通知';
   const body = payload.notification?.body || payload.data?.body || '';
-  const chatId = payload.data?.chatId;
+  const chatId = payload.data?.chat_id;
 
   // 同じチャットの場合は通知しない
   if (chatId && chatId === activeChatId) {
