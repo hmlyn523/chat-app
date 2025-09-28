@@ -407,21 +407,26 @@ export default function ChatRoom() {
   // FCMのメッセージ受信リスナー登録
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const messageHandler = (payload: any) => {
-        const msgChatId = payload.data?.chatId;
-        const isCurrentChat = window.location.pathname.includes(`/chat/${msgChatId}`);
+      const handler = (payload: any) => {
+        const msgChatId = payload.data?.chat_id; // sendPush.ts と揃える
+        const isVisible = document.visibilityState === 'visible';
 
-        if (!isCurrentChat) {
-          new Notification(payload.notification?.title || '新着メッセージ', {
-            body: payload.notification?.body || '',
-            icon: '/icons/icon-192.png',
-          });
+        // 同じチャットを開いていて、ページが表示中なら通知しない
+        if (isVisible && msgChatId === chatId) {
+          console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
+          return;
         }
+
+        // それ以外は通知を表示
+        new Notification(payload.notification?.title || '新着メッセージ', {
+          body: payload.notification?.body || '',
+          icon: '/icons/icon-192.png',
+        });
       };
 
-      onMessageListener(messageHandler);
+      onMessageListener(handler);
     }
-  }, []);
+  }, [chatId]);
 
   // // ★FCM メッセージ受信リスナー（現在のチャットなら通知を出さない）
   // useEffect(() => {
