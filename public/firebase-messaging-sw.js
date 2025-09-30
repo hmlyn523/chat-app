@@ -20,12 +20,11 @@ messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
 
   // 現在開いているタブを取得
-  const clientList_2 = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-  const isChatOpen_2 = clientList.some((client) => client.url.includes(`/chat/${chat_id}`));
+  // const clientList_2 = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+  // const isChatOpen_2 = clientList.some((client) => client.url.includes(`/chat/${chat_id}`));
 
   // 通知の内容を取り出す
-  // const notificationTitle = payload.data?.title || '通知';
-  const notificationTitle = isChatOpen_2;
+  const notificationTitle = payload.data?.title || '通知';
 
   // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
   let activeChatId = null;
