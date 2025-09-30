@@ -176,13 +176,21 @@ export default function ChatRoom() {
     // Service Worker が現在のチャットIDを知っていれば、
     // 通知が来たときに「このチャットをすでに開いているから通知不要」と判断できる。
     // そこで、今開いているチャットのIDを Service Worker に渡す。
-    if (navigator.serviceWorker.controller) {
-      // Service Worker にメッセージを送る
-      navigator.serviceWorker.controller.postMessage({
-        type: 'ACTIVE_CHAT', // メッセージの種類を識別するためのキー
-        chatId: chatId, // 現在開いているチャット画面のID
-      });
-    }
+    // if (navigator.serviceWorker.controller) {
+    //   // Service Worker にメッセージを送る
+    //   navigator.serviceWorker.controller.postMessage({
+    //     type: 'ACTIVE_CHAT', // メッセージの種類を識別するためのキー
+    //     chatId: chatId, // 現在開いているチャット画面のID
+    //   });
+    // }
+    navigator.serviceWorker.ready.then((registration) => {
+      if (registration.active) {
+        registration.active.postMessage({
+          type: 'ACTIVE_CHAT',
+          chatId,
+        });
+      }
+    });
 
     if (messages.length > 0 && !didInitialScrollRef.current) {
       setTimeout(() => {

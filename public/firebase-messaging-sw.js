@@ -19,8 +19,7 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(async (payload) => {
   // 通知の内容を取り出す
   const { title, body, chat_id } = payload.data || {};
-  // const notificationTitle = payload.data?.title || '通知';
-  const notificationTitle = chat_id || '通知';
+  const notificationTitle = payload.data?.title || '通知';
 
   // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
   let activeChatId = null;
