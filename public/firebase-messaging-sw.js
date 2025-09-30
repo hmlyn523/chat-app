@@ -17,9 +17,15 @@ const messaging = firebase.messaging();
 
 // FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
 messaging.onBackgroundMessage(async (payload) => {
+  // 現在開いているタブを取得
+  const clientList_2 = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+  const isChatOpen_2 = clientList.some((client) => client.url.includes(`/chat/${chatId}`));
+
   // 通知の内容を取り出す
   const { title, body, chat_id } = payload.data || {};
-  const notificationTitle = payload.data?.title || '通知';
+  const notificationTitle = isChatOpen_2
+    ? 'チャット画面を開いています'
+    : payload.data?.title || '通知';
 
   // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
   let activeChatId = null;
