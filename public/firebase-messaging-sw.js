@@ -66,7 +66,7 @@ messaging.onBackgroundMessage(async (payload) => {
 
   // もし対象のチャットが開かれていなければ、通知を表示する
   const notificationOptions = {
-    body: body, // 通知本文
+    body: activeChatId, // 通知本文
     icon: '/icons/icon-192.png', // 通知に表示するアイコン
     data: payload.data || {}, // 通知クリック時に利用する追加データ
   };
