@@ -22,7 +22,19 @@ addEventListener('message', (event) => {
   if (event.data?.type === 'ACTIVE_CHAT') {
     console.log(`Message received: ${event.data.chatId}`);
     activeChatId = event.data.chatId;
-    activeChatId = '123';
+  }
+});
+
+// SW側（firebase-messaging-sw.js 内）
+self.addEventListener('message', async (event) => {
+  if (event.data?.type === 'ACTIVE_CHAT') {
+    const chatId = event.data?.chatId;
+    activeChatId = chatId;
+    console.log('Received from client:', chatId);
+    // ここでIndexedDBに保存など、処理を実行
+    // 例: activeChatId = chatId;  // ローカル変数更新
+  } else if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting(); // SW更新時のハンドリング
   }
 });
 
@@ -71,7 +83,7 @@ messaging.onBackgroundMessage(async (payload) => {
   // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
   // if (isChatOpen || chat_id === activeChatId) {
   if (chat_id === activeChatId) {
-    console.log('同じチャットが開かれているので通知しません:', chat_id);
+    console.log('同じチactiveChatIdャットが開かれているので通知しません:', chat_id);
     return;
   }
 

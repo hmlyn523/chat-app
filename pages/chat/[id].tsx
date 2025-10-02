@@ -466,6 +466,54 @@ export default function ChatRoom() {
     };
   }, []);
 
+  // SW登録とメッセージ送信の関数
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js'); // あなたのSWファイルのパス
+          console.log('SW registered:', registration);
+
+          // controllerがセットされるまで待つ（初回の場合）
+          if (!navigator.serviceWorker.controller) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              sendMessageToSW(); // アクティブになったらメッセージ送信
+            });
+            return;
+          }
+
+          // すでにアクティブなら即送信
+          sendMessageToSW();
+        } catch (error) {
+          console.error('SW registration failed:', error);
+        }
+      };
+
+      const sendMessageToSW = (chatId = null) => {
+        // デフォルトでnull、必要に応じて引数で渡す
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'ACTIVE_CHAT',
+            chatId: chatId || 'default-chat-id', // 実際のchatIdをここで設定（例: 状態から取得）
+          });
+          console.log('Message sent to SW');
+        } else {
+          console.warn('No active SW controller');
+        }
+      };
+
+      registerSW();
+      // クリーンアップ: 画面離脱時にnullを送信
+      return () => {
+        sendMessageToSW(null);
+        // 追加: controllerchangeリスナーの解除（オプションでリーク防止）
+        navigator.serviceWorker.removeEventListener('controllerchange', () => {
+          // ハンドラーの参照が必要なら変数化して保持
+        });
+      };
+    }
+  }, [chatId]);
+
   // // ★現在開いているチャットIDを Service Worker に送信
   // useEffect(() => {
   //   if (!chatId) return;
