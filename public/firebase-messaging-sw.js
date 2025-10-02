@@ -22,6 +22,7 @@ addEventListener('message', (event) => {
   if (event.data?.type === 'ACTIVE_CHAT') {
     console.log(`Message received: ${event.data.chatId}`);
     activeChatId = event.data.chatId;
+    activeChatId = '123';
   }
 });
 
