@@ -184,12 +184,12 @@ export default function ChatRoom() {
     //   });
     // }
     navigator.serviceWorker.ready.then((registration) => {
-      if (registration.active) {
-        registration.active.postMessage({
-          type: 'ACTIVE_CHAT',
-          chatId,
-        });
-      }
+      // if (registration.active) {
+      registration.active?.postMessage({
+        type: 'ACTIVE_CHAT',
+        chatId,
+      });
+      // }
     });
 
     if (messages.length > 0 && !didInitialScrollRef.current) {

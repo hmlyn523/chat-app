@@ -15,55 +15,60 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
+let activeChatId = null;
+
+addEventListener('message', (event) => {
+  if (event.data?.type === 'ACTIVE_CHAT') {
+    console.log(`Message received: ${event.data.chatId}`);
+    activeChatId = event.data.chatId;
+  }
+});
+
 // FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
 messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
 
-  // 現在開いているタブを取得
-  // const clientList_2 = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-  // const isChatOpen_2 = clientList.some((client) => client.url.includes(`/chat/${chat_id}`));
-
   // 通知の内容を取り出す
   const notificationTitle = payload.data?.title || '通知';
 
-  // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
-  let activeChatId = null;
-
   // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
   // → これで「現在ユーザーが見ているチャット画面のID」を知れる
-  self.addEventListener('message', (event) => {
-    if (event.data?.type === 'ACTIVE_CHAT') {
-      activeChatId = event.data.chatId;
-    }
-  });
+  // self.addEventListener('message', (event) => {
+  //   if (event.data?.type === 'ACTIVE_CHAT') {
+  //     activeChatId = event.data.chatId;
+  //   }
+  // });
+  console.log('Active Chat ID from message event:', activeChatId);
 
   // 開かれている全てのブラウザタブ/ウィンドウを取得
   // includeUncontrolled: true → Service Worker の管理外でも取得する
-  const clientList = await clients.matchAll({
-    type: 'window',
-    includeUncontrolled: true,
-  });
+  // const clientList = await clients.matchAll({
+  //   type: 'window',
+  //   includeUncontrolled: true,
+  // });
 
-  let isChatOpen = false;
+  // let isChatOpen = false;
 
   // 開いているタブのURLを調べて、「通知対象のチャット画面」が存在するか確認する
-  for (const client of clientList) {
-    console.log(`Client URL [${client.id}]:`, client.url);
+  // for (const client of clientList) {
+  //   console.log(`Client URL [${client.id}]:`, client.url);
 
-    // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
-    // そのチャットはすでに開かれていると判断できる
-    if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
-      isChatOpen = true; // 該当のチャットがすでに開かれている
-      break;
-    }
-  }
+  // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
+  // そのチャットはすでに開かれていると判断できる
+  // if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
+  //   isChatOpen = true; // 該当のチャットがすでに開かれている
+  //   break;
+  // }
+  // }
 
   // ここまでで2つの判定方法がある:
   // 1. clients.matchAll でURLを調べる方法
   // 2. postMessage で送られた activeChatId を利用する方法
   //
   // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
-  if (isChatOpen || chat_id === activeChatId) {
+  // if (isChatOpen || chat_id === activeChatId) {
+  if (chat_id === activeChatId) {
     console.log('同じチャットが開かれているので通知しません:', chat_id);
     return;
   }
