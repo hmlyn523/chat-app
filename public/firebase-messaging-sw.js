@@ -30,7 +30,8 @@ messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
 
   // 通知の内容を取り出す
-  const notificationTitle = payload.data?.title || '通知';
+  // const notificationTitle = payload.data?.title || '通知';
+  const notificationTitle = activeChatId;
 
   // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
   // → これで「現在ユーザーが見ているチャット画面のID」を知れる
