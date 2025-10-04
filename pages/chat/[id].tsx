@@ -185,6 +185,7 @@ export default function ChatRoom() {
     // }
     navigator.serviceWorker.ready.then((registration) => {
       // if (registration.active) {
+      alert('Service Worker に chatId を送ります: ' + chatId);
       registration.active?.postMessage({
         type: 'ACTIVE_CHAT',
         chatId,
@@ -472,6 +473,7 @@ export default function ChatRoom() {
   // チャット画面 (chatIdが変わるたびに呼ぶ)
   useEffect(() => {
     if (navigator.serviceWorker.controller) {
+      alert('チャット画面が変わったので Service Worker に chatId を送ります: ' + chatId);
       navigator.serviceWorker.controller.postMessage({
         type: 'ACTIVE_CHAT',
         chatId,
@@ -481,6 +483,7 @@ export default function ChatRoom() {
     return () => {
       // 画面離脱時は null を送る
       if (navigator.serviceWorker.controller) {
+        alert('チャット画面を離れたので Service Worker に null を送ります');
         navigator.serviceWorker.controller.postMessage({
           type: 'ACTIVE_CHAT',
           chatId: 'no-chat-id',
