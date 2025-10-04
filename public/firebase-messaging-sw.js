@@ -51,10 +51,10 @@ messaging.onBackgroundMessage(async (payload) => {
   console.log('Active chat ID:', activeChatId);
   console.log('Message chat ID:', chat_id);
 
-  // if (chat_id === activeChatId) {
-  //   console.log('Chat is active, no notification shown.');
-  //   return;
-  // }
+  if (chat_id === activeChatId) {
+    console.log('Chat is active, no notification shown.');
+    return;
+  }
 
   // もし対象のチャットが開かれていなければ、通知を表示する
   var body_ = 'firebase-messaging-sw.jsのFCM受信';
