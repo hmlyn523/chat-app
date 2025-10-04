@@ -422,6 +422,8 @@ export default function ChatRoom() {
         const isFrontTab = document.visibilityState === 'visible' && document.hasFocus();
         console.log('[FCM] メッセージ受信:', payload, 'アクティブ状態:', isFrontTab);
 
+        alert('[FCM] メッセージ受信 アクティブ状態: ' + isFrontTab);
+        alert('[FCM] メッセージ受信 chatId: ' + msgChatId + ' 現在のchatId: ' + chatId);
         // 同じチャットを開いていて、ページが表示中なら通知しない
         if (isFrontTab && msgChatId === chatId) {
           console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
