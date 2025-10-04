@@ -362,16 +362,16 @@ export default function ChatRoom() {
 
     const handleScroll = () => {
       const sum = container.scrollHeight - container.scrollTop - container.clientHeight;
-      console.log(
-        'スクロール位置:',
-        sum,
-        '高さ:',
-        container.scrollHeight,
-        'クライアント高さ:',
-        container.clientHeight,
-        'ddd',
-        container.scrollTop
-      );
+      // console.log(
+      //   'スクロール位置:',
+      //   sum,
+      //   '高さ:',
+      //   container.scrollHeight,
+      //   'クライアント高さ:',
+      //   container.clientHeight,
+      //   'ddd',
+      //   container.scrollTop
+      // );
       const isAtBottom = sum < 20;
 
       isAtBottomRef.current = isAtBottom;
@@ -412,29 +412,32 @@ export default function ChatRoom() {
     scrollToBottom();
   }, []);
 
-  // FCMのメッセージ受信リスナー登録
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handler = (payload: any) => {
-        const msgChatId = payload.data?.chat_id; // sendPush.ts と揃える
-        const isVisible = document.visibilityState === 'visible';
+  // // FCMのメッセージ受信リスナー登録
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const handler = (payload: any) => {
+  //       const msgChatId = payload.data?.chat_id; // sendPush.ts と揃える
+  //       // const isVisible = document.visibilityState === 'visible';
+  //       const isFrontTab = document.visibilityState === 'visible' && document.hasFocus();
+  //       console.log('[FCM] メッセージ受信:', payload, 'アクティブ状態:', isFrontTab);
 
-        // 同じチャットを開いていて、ページが表示中なら通知しない
-        if (isVisible && msgChatId === chatId) {
-          console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
-          return;
-        }
+  //       // 同じチャットを開いていて、ページが表示中なら通知しない
+  //       if (isFrontTab && msgChatId === chatId) {
+  //         console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
+  //         return;
+  //       }
+  //       var body = '[id].tsxのFCM受信';
+  //       // それ以外は通知を表示
+  //       new Notification(payload.data?.title || '新着メッセージ', {
+  //         // body: payload.data?.body || '',
+  //         body: body,
+  //         icon: '/icons/icon-192.png',
+  //       });
+  //     };
 
-        // それ以外は通知を表示
-        new Notification(payload.notification?.title || '新着メッセージ', {
-          body: payload.notification?.body || '',
-          icon: '/icons/icon-192.png',
-        });
-      };
-
-      onMessageListener(handler);
-    }
-  }, [chatId]);
+  //     onMessageListener(handler);
+  //   }
+  // }, [chatId]);
 
   // // ★FCM メッセージ受信リスナー（現在のチャットなら通知を出さない）
   // useEffect(() => {
@@ -480,7 +483,7 @@ export default function ChatRoom() {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({
           type: 'ACTIVE_CHAT',
-          chatId: null,
+          chatId: 'no-chat-id',
         });
       }
     };

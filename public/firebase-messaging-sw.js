@@ -18,45 +18,53 @@ const messaging = firebase.messaging();
 // 直近で postMessage から送られた「現在開いているチャットID」を保持する変数
 let activeChatId = null;
 
-addEventListener('message', (event) => {
-  if (event.data?.type === 'ACTIVE_CHAT') {
-    console.log(`Message received: ${event.data.chatId}`);
-    activeChatId = event.data.chatId;
-  }
-});
-
-// SW側（firebase-messaging-sw.js 内）
 self.addEventListener('message', async (event) => {
-  if (event.data?.type === 'ACTIVE_CHAT') {
-    const chatId = event.data?.chatId;
-    activeChatId = chatId;
-    console.log('Received from client:', chatId);
-    // ここでIndexedDBに保存など、処理を実行
-    // 例: activeChatId = chatId;  // ローカル変数更新
-  } else if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting(); // SW更新時のハンドリング
+  const type = event.data?.type;
+
+  switch (type) {
+    case 'ACTIVE_CHAT': {
+      const chatId = event.data?.chatId;
+      activeChatId = chatId;
+      console.log('Received from client:', activeChatId);
+      // ここで IndexedDB への保存など必要な処理を追加
+      break;
+    }
+    case 'SKIP_WAITING': {
+      self.skipWaiting();
+      break;
+    }
   }
 });
 
 // FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
+// 以下の時に呼ばれる
+// ・タブが非アクティブ
+// ・ブラウザが最小化している
 messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
-  notificationTitle = activeChatId;
-  body = chat_id;
+  // notificationTitle = activeChatId;
+  // body = chat_id;
 
-  if (chat_id === activeChatId) {
-    return;
-  }
+  console.log('Received background message ', payload);
+  console.log('Active chat ID:', activeChatId);
+  console.log('Message chat ID:', chat_id);
+
+  // if (chat_id === activeChatId) {
+  //   console.log('Chat is active, no notification shown.');
+  //   return;
+  // }
 
   // もし対象のチャットが開かれていなければ、通知を表示する
+  var body_ = 'firebase-messaging-sw.jsのFCM受信';
   const notificationOptions = {
-    body: body,
+    body: body_,
     icon: '/icons/icon-192.png',
     data: payload.data || {},
   };
 
+  console.log('Showing notification:', notificationTitle, notificationOptions);
   // ブラウザに通知を表示
   self.registration.showNotification(notificationTitle, notificationOptions);
 });

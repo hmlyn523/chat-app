@@ -50,9 +50,13 @@ function FCMRegistration() {
         }
 
         // プラットフォーム判定
-        let platform = 'web';
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) platform = 'ios';
-        else if (/Android/i.test(navigator.userAgent)) platform = 'android';
+        let platform: 'ios' | 'android' | 'web' = 'web';
+
+        if (typeof window !== 'undefined') {
+          const ua = navigator.userAgent;
+          if (/iPhone|iPad|iPod/i.test(ua)) platform = 'ios';
+          else if (/Android/i.test(ua)) platform = 'android';
+        }
 
         const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
@@ -75,7 +79,7 @@ function FCMRegistration() {
 
         // フォアグラウンドメッセージリスナー
         onMessageListener((payload) => {
-          const msgChatId = payload.data?.chatRoomId;
+          const msgChatId = payload.data?.chat_id;
           const isCurrentChat = window.location.pathname === `/chat/${msgChatId}`;
 
           if (isCurrentChat) {
@@ -83,9 +87,11 @@ function FCMRegistration() {
             return;
           }
 
-          if (payload.notification) {
-            new Notification(payload.notification.title || '新しいメッセージ', {
-              body: payload.notification.body || '',
+          if (payload.data) {
+            var body = '_app.tsxのFCM受信';
+            new Notification(payload.data.title || '新しいメッセージ', {
+              // body: payload.notification.body || '',
+              body: body,
               icon: '/icons/icon-192.png',
               data: payload.data || {},
             });
