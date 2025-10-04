@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
 import localeData from 'dayjs/plugin/localeData';
 import 'dayjs/locale/ja';
-import { onMessageListener } from '@/public/firebase-messaging';
+import { onMessageListener } from '@/lib/firebase-messaging';
 
 import { fetchMessagesAndMarkRead, fetchMembers, fetchUsers } from 'lib/services/userService';
 import { useSafeScroll } from 'lib/hooks/safeScrollToBottom';

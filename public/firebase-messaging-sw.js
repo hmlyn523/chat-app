@@ -41,57 +41,17 @@ self.addEventListener('message', async (event) => {
 // FCM(Firebase Cloud Messaging)からバックグラウンドで通知が届いたときの処理
 messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
+  const notificationTitle = payload.data?.title || '通知';
 
-  // 通知の内容を取り出す
-  // const notificationTitle = payload.data?.title || '通知';
-  const notificationTitle = activeChatId;
-
-  // フロント側(タブのJavaScript)から送られるメッセージを待ち受ける
-  // → これで「現在ユーザーが見ているチャット画面のID」を知れる
-  // self.addEventListener('message', (event) => {
-  //   if (event.data?.type === 'ACTIVE_CHAT') {
-  //     activeChatId = event.data.chatId;
-  //   }
-  // });
-  console.log('Active Chat ID from message event:', activeChatId);
-
-  // 開かれている全てのブラウザタブ/ウィンドウを取得
-  // includeUncontrolled: true → Service Worker の管理外でも取得する
-  // const clientList = await clients.matchAll({
-  //   type: 'window',
-  //   includeUncontrolled: true,
-  // });
-
-  // let isChatOpen = false;
-
-  // 開いているタブのURLを調べて、「通知対象のチャット画面」が存在するか確認する
-  // for (const client of clientList) {
-  //   console.log(`Client URL [${client.id}]:`, client.url);
-
-  // URLに「/chat/◯◯」という形でチャットIDが含まれていれば、
-  // そのチャットはすでに開かれていると判断できる
-  // if (chat_id && client.url.includes(`/chat/${chat_id}`)) {
-  //   isChatOpen = true; // 該当のチャットがすでに開かれている
-  //   break;
-  // }
-  // }
-
-  // ここまでで2つの判定方法がある:
-  // 1. clients.matchAll でURLを調べる方法
-  // 2. postMessage で送られた activeChatId を利用する方法
-  //
-  // どちらかで「すでに同じチャットが開かれている」と判断できたら通知しない
-  // if (isChatOpen || chat_id === activeChatId) {
   if (chat_id === activeChatId) {
-    console.log('同じチactiveChatIdャットが開かれているので通知しません:', chat_id);
     return;
   }
 
   // もし対象のチャットが開かれていなければ、通知を表示する
   const notificationOptions = {
-    body: body, // 通知本文
-    icon: '/icons/icon-192.png', // 通知に表示するアイコン
-    data: payload.data || {}, // 通知クリック時に利用する追加データ
+    body: body,
+    icon: '/icons/icon-192.png',
+    data: payload.data || {},
   };
 
   // ブラウザに通知を表示
@@ -105,12 +65,14 @@ self.addEventListener('notificationclick', function (event) {
   event.waitUntil(clients.openWindow(url));
 });
 
+// Service Worker の更新を即座に反映させるためのリスナー
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
+// 新しいService Workerがインストールされたときに、すぐにアクティブ化する
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });

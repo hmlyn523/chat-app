@@ -17,33 +17,28 @@ function FCMRegistration() {
   const hasRegisteredRef = useRef(false);
 
   useEffect(() => {
-    // SSRでは実行しない
-    if (typeof window === 'undefined') return;
-
-    // ユーザーが未ログインの場合はスキップ
-    if (!user) return;
-
-    // すでに登録済みならスキップ（Strict Mode対応）
-    if (hasRegisteredRef.current) return;
+    if (typeof window === 'undefined') return; // SSR防止
+    if (!user) return; // ログインしてないならスキップ
+    if (hasRegisteredRef.current) return; // StrictMode対応
     hasRegisteredRef.current = true;
 
     async function setupFCM() {
       try {
-        // 1️⃣ Service Worker を登録
+        // Service Worker を登録
         const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         console.log('SW registered:', reg);
 
-        // 2️⃣ FCM 関連の処理を動的 import
+        // FCM 関連処理を動的 import
         const { requestPermissionAndGetToken, onMessageListener, getExistingToken } = await import(
-          'public/firebase-messaging'
+          '@/lib/firebase-messaging'
         );
 
         // 通知許可とトークン取得
         let token: string | null = null;
         if (Notification.permission === 'granted') {
-          token = await getExistingToken();
+          token = await getExistingToken(reg);
         } else {
-          token = await requestPermissionAndGetToken();
+          token = await requestPermissionAndGetToken(reg);
         }
         if (!token) return;
 
@@ -54,13 +49,14 @@ function FCMRegistration() {
           localStorage.setItem('device_id', deviceId);
         }
 
+        // プラットフォーム判定
         let platform = 'web';
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) platform = 'ios';
         else if (/Android/i.test(navigator.userAgent)) platform = 'android';
 
         const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
-        // トークンをDBに保存
+        // Supabase に保存
         await supabase.from('push_tokens').upsert(
           {
             user_id: user?.id,
@@ -77,9 +73,8 @@ function FCMRegistration() {
           }
         );
 
-        // フォアグラウンドメッセージリスナー設定
+        // フォアグラウンドメッセージリスナー
         onMessageListener((payload) => {
-          // ✅ 現在のパスがチャット画面かどうか確認
           const msgChatId = payload.data?.chatRoomId;
           const isCurrentChat = window.location.pathname === `/chat/${msgChatId}`;
 
@@ -104,7 +99,7 @@ function FCMRegistration() {
     setupFCM();
   }, [user]);
 
-  return null; // このコンポーネントは何もレンダリングしない
+  return null;
 }
 
 export default function App({ Component, pageProps }: AppProps<{ initialSession: Session }>) {
@@ -119,7 +114,6 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
   }, []);
 
   useEffect(() => {
-    // Service Worker が切り替わったら更新を適用
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         console.log('Service Worker updated');
@@ -134,13 +128,8 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
       supabaseClient={supabaseClient}
       initialSession={pageProps.initialSession}
     >
-      {/* FCM登録コンポーネント */}
       <FCMRegistration />
-
-      {/* ヘッダー */}
       {isChatRoom ? <ChatHeader /> : <ListHeader />}
-
-      {/* メインコンテンツ */}
       <Component {...pageProps} />
     </SessionContextProvider>
   );
