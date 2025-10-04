@@ -183,15 +183,15 @@ export default function ChatRoom() {
     //     chatId: chatId, // 現在開いているチャット画面のID
     //   });
     // }
-    navigator.serviceWorker.ready.then((registration) => {
-      // if (registration.active) {
-      // alert('Service Worker に chatId を送ります: ' + chatId);
-      registration.active?.postMessage({
-        type: 'ACTIVE_CHAT',
-        chatId,
-      });
-      // }
-    });
+    // navigator.serviceWorker.ready.then((registration) => {
+    //   // if (registration.active) {
+    //   // alert('Service Worker に chatId を送ります: ' + chatId);
+    //   registration.active?.postMessage({
+    //     type: 'ACTIVE_CHAT',
+    //     chatId,
+    //   });
+    //   // }
+    // });
 
     if (messages.length > 0 && !didInitialScrollRef.current) {
       setTimeout(() => {
@@ -425,7 +425,8 @@ export default function ChatRoom() {
         alert('[FCM] メッセージ受信 アクティブ状態: ' + isFrontTab);
         alert('[FCM] メッセージ受信 chatId: ' + msgChatId + ' 現在のchatId: ' + chatId);
         // 同じチャットを開いていて、ページが表示中なら通知しない
-        if (isFrontTab && msgChatId === chatId) {
+        // if (isFrontTab && msgChatId === chatId) {
+        if (msgChatId === chatId) {
           console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
           return;
         }
