@@ -25,6 +25,7 @@ self.addEventListener('message', async (event) => {
     case 'ACTIVE_CHAT': {
       const chatId = event.data?.chatId;
       activeChatId = chatId;
+      alert('Service Worker received ACTIVE_CHAT: ' + activeChatId);
       console.log('Received from client:', activeChatId);
       // ここで IndexedDB への保存など必要な処理を追加
       break;
