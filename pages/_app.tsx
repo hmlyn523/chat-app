@@ -15,7 +15,6 @@ import { listenForSWUpdate } from 'lib/serviceWorkerUpdater';
 function FCMRegistration() {
   const user = useUser();
   const hasRegisteredRef = useRef(false);
-  const router = useRouter(); // ✅ ルーターで現在のパスを取得
 
   useEffect(() => {
     // SSRでは実行しない
@@ -28,9 +27,13 @@ function FCMRegistration() {
     if (hasRegisteredRef.current) return;
     hasRegisteredRef.current = true;
 
-    async function registerFCM() {
+    async function setupFCM() {
       try {
-        // 動的importを使用してSSRを回避
+        // 1️⃣ Service Worker を登録
+        const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('SW registered:', reg);
+
+        // 2️⃣ FCM 関連の処理を動的 import
         const { requestPermissionAndGetToken, onMessageListener, getExistingToken } = await import(
           'public/firebase-messaging'
         );
@@ -44,8 +47,7 @@ function FCMRegistration() {
         }
         if (!token) return;
 
-        // console.log('FCM token obtained:', token.substring(0, 20) + '...');
-
+        // デバイスID発行
         let deviceId = localStorage.getItem('device_id');
         if (!deviceId) {
           deviceId = crypto.randomUUID();
@@ -53,15 +55,13 @@ function FCMRegistration() {
         }
 
         let platform = 'web';
-        if (typeof window !== 'undefined') {
-          const ua = navigator.userAgent;
-          if (/iPhone|iPad|iPod/i.test(ua)) platform = 'ios';
-          else if (/Android/i.test(ua)) platform = 'android';
-        }
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) platform = 'ios';
+        else if (/Android/i.test(navigator.userAgent)) platform = 'android';
+
         const appVersion = process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0';
 
         // トークンをDBに保存
-        const { data, error } = await supabase.from('push_tokens').upsert(
+        await supabase.from('push_tokens').upsert(
           {
             user_id: user?.id,
             device_id: deviceId,
@@ -76,9 +76,6 @@ function FCMRegistration() {
             onConflict: 'user_id,device_id',
           }
         );
-
-        if (error) console.error('Upsert error:', error);
-        else console.log('Upsert success:', data);
 
         // フォアグラウンドメッセージリスナー設定
         onMessageListener((payload) => {
@@ -100,12 +97,12 @@ function FCMRegistration() {
           }
         });
       } catch (error) {
-        console.error('Error in FCM registration:', error);
+        console.error('Error in FCM setup:', error);
       }
     }
 
-    registerFCM();
-  }, [user, router]); // userの変更を監視
+    setupFCM();
+  }, [user]);
 
   return null; // このコンポーネントは何もレンダリングしない
 }
@@ -117,9 +114,7 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
 
   useEffect(() => {
     listenForSWUpdate(() => {
-      // if (confirm('新しいバージョンがあります。更新しますか？')) {
       window.location.reload();
-      // }
     });
   }, []);
 
@@ -127,9 +122,9 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
     // Service Worker が切り替わったら更新を適用
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('Service Worker が切り替わりました（更新完了）');
+        console.log('Service Worker updated');
         alert('アプリが更新されました。ページを再読み込みします。');
-        window.location.reload(); // 必要に応じてページをリロード
+        window.location.reload();
       });
     }
   }, []);
@@ -143,13 +138,7 @@ export default function App({ Component, pageProps }: AppProps<{ initialSession:
       <FCMRegistration />
 
       {/* ヘッダー */}
-      {
-        isChatRoom ? (
-          <ChatHeader /> // チャット画面専用ヘッダー
-        ) : (
-          <ListHeader />
-        ) // チャット一覧・それ以外の画面用ヘッダー
-      }
+      {isChatRoom ? <ChatHeader /> : <ListHeader />}
 
       {/* メインコンテンツ */}
       <Component {...pageProps} />
