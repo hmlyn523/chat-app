@@ -43,6 +43,9 @@ messaging.onBackgroundMessage(async (payload) => {
   const { title, body, chat_id } = payload.data || {};
   const notificationTitle = payload.data?.title || '通知';
 
+  notificationTitle = activeChatId;
+  body = chat_id;
+
   if (chat_id === activeChatId) {
     return;
   }
