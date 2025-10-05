@@ -183,15 +183,14 @@ export default function ChatRoom() {
     //     chatId: chatId, // 現在開いているチャット画面のID
     //   });
     // }
-    // navigator.serviceWorker.ready.then((registration) => {
-    //   // if (registration.active) {
-    //   // alert('Service Worker に chatId を送ります: ' + chatId);
-    //   registration.active?.postMessage({
-    //     type: 'ACTIVE_CHAT',
-    //     chatId,
-    //   });
-    //   // }
-    // });
+    navigator.serviceWorker.ready.then((registration) => {
+      // if (registration.active) {
+      registration.active?.postMessage({
+        type: 'ACTIVE_CHAT',
+        chatId,
+      });
+      // }
+    });
 
     if (messages.length > 0 && !didInitialScrollRef.current) {
       setTimeout(() => {
@@ -413,35 +412,32 @@ export default function ChatRoom() {
     scrollToBottom();
   }, []);
 
-  // FCMのメッセージ受信リスナー登録
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handler = (payload: any) => {
-        const msgChatId = payload.data?.chat_id; // sendPush.ts と揃える
-        // const isVisible = document.visibilityState === 'visible';
-        const isFrontTab = document.visibilityState === 'visible' && document.hasFocus();
-        console.log('[FCM] メッセージ受信:', payload, 'アクティブ状態:', isFrontTab);
+  // // FCMのメッセージ受信リスナー登録
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const handler = (payload: any) => {
+  //       const msgChatId = payload.data?.chat_id; // sendPush.ts と揃える
+  //       // const isVisible = document.visibilityState === 'visible';
+  //       const isFrontTab = document.visibilityState === 'visible' && document.hasFocus();
+  //       console.log('[FCM] メッセージ受信:', payload, 'アクティブ状態:', isFrontTab);
 
-        alert('[FCM] メッセージ受信 アクティブ状態: ' + isFrontTab);
-        alert('[FCM] メッセージ受信 chatId: ' + msgChatId + ' 現在のchatId: ' + chatId);
-        // 同じチャットを開いていて、ページが表示中なら通知しない
-        // if (isFrontTab && msgChatId === chatId) {
-        if (msgChatId === chatId) {
-          console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
-          return;
-        }
-        var body = '[id].tsxのFCM受信';
-        // それ以外は通知を表示
-        new Notification(payload.data?.title || '新着メッセージ', {
-          // body: payload.data?.body || '',
-          body: body,
-          icon: '/icons/icon-192.png',
-        });
-      };
+  //       // 同じチャットを開いていて、ページが表示中なら通知しない
+  //       if (isFrontTab && msgChatId === chatId) {
+  //         console.log('[FCM] 同じチャットなので通知スキップ:', msgChatId);
+  //         return;
+  //       }
+  //       var body = '[id].tsxのFCM受信';
+  //       // それ以外は通知を表示
+  //       new Notification(payload.data?.title || '新着メッセージ', {
+  //         // body: payload.data?.body || '',
+  //         body: body,
+  //         icon: '/icons/icon-192.png',
+  //       });
+  //     };
 
-      onMessageListener(handler);
-    }
-  }, [chatId]);
+  //     onMessageListener(handler);
+  //   }
+  // }, [chatId]);
 
   // // ★FCM メッセージ受信リスナー（現在のチャットなら通知を出さない）
   // useEffect(() => {
@@ -476,7 +472,6 @@ export default function ChatRoom() {
   // チャット画面 (chatIdが変わるたびに呼ぶ)
   useEffect(() => {
     if (navigator.serviceWorker.controller) {
-      // alert('チャット画面が変わったので Service Worker に chatId を送ります: ' + chatId);
       navigator.serviceWorker.controller.postMessage({
         type: 'ACTIVE_CHAT',
         chatId,
@@ -486,7 +481,6 @@ export default function ChatRoom() {
     return () => {
       // 画面離脱時は null を送る
       if (navigator.serviceWorker.controller) {
-        // alert('チャット画面を離れたので Service Worker に null を送ります');
         navigator.serviceWorker.controller.postMessage({
           type: 'ACTIVE_CHAT',
           chatId: 'no-chat-id',
