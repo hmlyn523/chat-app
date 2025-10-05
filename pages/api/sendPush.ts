@@ -49,17 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const registrationTokens = tokens.map((t) => t.fcm_token);
 
     // メッセージの作成
-    // const message: admin.messaging.MulticastMessage = {
-    //   tokens: registrationTokens,
-    //   data: {
-    //     title,
-    //     body,
-    //     ...stringifiedData, // 既存のデータ
-    //     chat_id: chatId,
-    //   },
-    // };
-
-    // メッセージの作成
     const message: admin.messaging.MulticastMessage = {
       tokens: registrationTokens,
       // 1. notificationフィールドを含める（Androidのフォアグラウンド/バックグラウンドの挙動に影響）
