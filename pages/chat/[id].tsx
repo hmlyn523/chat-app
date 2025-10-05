@@ -485,12 +485,12 @@ export default function ChatRoom() {
 
   return (
     <div
-      className="pt-16 pb-16 flex flex-col overflow-hidden bg-gray-200"
+      className="pt-16 pb-16 flex flex-col overflow-hidden bg-white"
       style={{ height: '100dvh' }}
     >
       {/* メッセージ一覧：スクロール対象 */}
       <div
-        className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-gray-100"
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50"
         style={{ overflowY: 'auto' }}
       >
         {messages.map((msg, index) => {
@@ -519,45 +519,45 @@ export default function ChatRoom() {
             <div key={msg.id}>
               {/* ✅ 日付が変わったら中央に年月日（曜日）を表示 */}
               {showDate && (
-                <div className="text-center text-xs text-gray-500 my-4">
+                <div className="text-center text-xs text-gray-500 my-6 bg-white py-2 rounded-lg mx-auto w-48">
                   {dayjs(msg.created_at).format('YYYY年M月D日（ddd）')}
                 </div>
               )}
-              <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                 <div className="max-w-[75%]">
-                  {!isMine && <div className="text-xs text-gray-600 mb-1 ml-2">{name}</div>}
+                  {!isMine && (
+                    <div className="text-xs font-medium text-gray-600 mb-1 ml-2">{name}</div>
+                  )}
                   <div
                     className={`
-                                        px-4 py-2 text-sm break-words
-                                        ${
-                                          isMine
-                                            ? 'bg-sky-100 text-gray-800 rounded-2xl rounded-br-none border-2 border-black shadow-2xl'
-                                            : 'bg-yellow-100 text-gray-800 rounded-2xl rounded-tl-none border-2 border-black shadow-2xl'
-                                        }
-                                        `}
+                      px-4 py-3 text-sm break-words max-w-full
+                      ${
+                        isMine
+                          ? 'bg-blue-100 text-gray-800 rounded-2xl rounded-br-md shadow-md'
+                          : 'bg-white text-gray-800 rounded-2xl rounded-tl-md shadow-md border border-gray-200'
+                      }
+                    `}
                   >
                     {/* テキストがある場合は表示 */}
-                    {msg.content && <p>{msg.content}</p>}
+                    {msg.content && <p className="leading-relaxed">{msg.content}</p>}
 
                     {/* 画像がある場合は表示 */}
                     {msg.image_url && (
                       <img
                         src={msg.image_url}
                         alt="uploaded"
-                        className="mt-2 rounded max-w-full h-auto max-h-40"
+                        className="mt-2 rounded-lg max-w-full h-auto max-h-48 object-cover"
                       />
                     )}
                   </div>
 
                   {/* 追加: 時間表示 + 既読表示（自分の投稿のみ）を1行で */}
                   <div
-                    className={`flex items-center text-[10px] mt-1 ${isMine ? 'justify-end text-gray-500' : 'justify-start text-gray-500 ml-2'}`}
+                    className={`flex items-center text-xs mt-1 ${isMine ? 'justify-end text-gray-500' : 'justify-start text-gray-500 ml-2'}`}
                   >
-                    <div>{timeText}</div>
-                    {isMine && (
-                      <div className="ml-2 text-gray-500">
-                        {readCount === totalOtherMembers ? '既読' : ''}
-                      </div>
+                    <div className="mr-1">{timeText}</div>
+                    {isMine && readCount === totalOtherMembers && (
+                      <div className="ml-2 text-blue-500 font-medium">既読</div>
                     )}
                   </div>
                 </div>
@@ -569,8 +569,8 @@ export default function ChatRoom() {
       </div>
 
       {/* 固定フッター(入力欄 + 送信ボタン) */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-gray-200 border-t z-10 touch-none overscroll-contain">
-        <div className="flex items-center gap-2">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 z-10 shadow-lg">
+        <div className="flex items-center gap-3 max-w-4xl mx-auto">
           {/* 画像選択ボタン */}
           <input
             type="file"
@@ -581,9 +581,9 @@ export default function ChatRoom() {
           />
           <label
             htmlFor="image-upload"
-            className="bg-gray-200 text-white rounded-full px-2  hover:bg-gray-600"
+            className="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-blue-600 transition-colors shadow-md"
           >
-            📸
+            📷
           </label>
           {/* 入力フォーム */}
           <input
@@ -591,17 +591,18 @@ export default function ChatRoom() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Message..."
-            className="flex-1 border bg-gray-100 rounded-full px-4 py-2 focus:outline-none"
+            placeholder="メッセージを入力..."
+            className="flex-1 border border-gray-300 bg-white rounded-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
           />
           {/* 送信ボタン */}
-          <input
-            // type="button"
-            tabIndex={-1}
-            value="🖋️"
+          <button
+            type="button"
             onClick={sendMessage}
-            className="bg-gray-300 text-white rounded-full px-4 py-2 cursor-pointer hover:bg-gray-400 w-12"
-          />
+            disabled={!input.trim()}
+            className="bg-blue-500 text-white rounded-full px-5 py-3 cursor-pointer hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md w-12 flex items-center justify-center"
+          >
+            💬
+          </button>
         </div>
       </div>
     </div>
