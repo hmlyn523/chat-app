@@ -40,34 +40,34 @@ self.addEventListener('message', async (event) => {
 // 以下の時に呼ばれる
 // ・タブが非アクティブ
 // ・ブラウザが最小化している
-messaging.onBackgroundMessage(async (payload) => {
-  const { title, body, chat_id } = payload.data || {};
-  const notificationTitle = payload.data?.title || '通知';
+// messaging.onBackgroundMessage(async (payload) => {
+//   const { title, body, chat_id } = payload.data || {};
+//   const notificationTitle = payload.data?.title || '通知';
 
-  // notificationTitle = activeChatId;
-  // body = chat_id;
+//   // notificationTitle = activeChatId;
+//   // body = chat_id;
 
-  console.log('Received background message ', payload);
-  console.log('Active chat ID:', activeChatId);
-  console.log('Message chat ID:', chat_id);
+//   console.log('Received background message ', payload);
+//   console.log('Active chat ID:', activeChatId);
+//   console.log('Message chat ID:', chat_id);
 
-  if (chat_id === activeChatId) {
-    console.log('Chat is active, no notification shown.');
-    return;
-  }
+//   // if (chat_id === activeChatId) {
+//   //   console.log('Chat is active, no notification shown.');
+//   //   return;
+//   // }
 
-  // もし対象のチャットが開かれていなければ、通知を表示する
-  var body_ = 'firebase-messaging-sw.jsのFCM受信';
-  const notificationOptions = {
-    body: body_,
-    icon: '/icons/icon-192.png',
-    data: payload.data || {},
-  };
+//   // もし対象のチャットが開かれていなければ、通知を表示する
+//   var body_ = 'firebase-messaging-sw.jsのFCM受信';
+//   const notificationOptions = {
+//     body: body_,
+//     icon: '/icons/icon-192.png',
+//     data: payload.data || {},
+//   };
 
-  console.log('Showing notification:', notificationTitle, notificationOptions);
-  // ブラウザに通知を表示
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+//   console.log('Showing notification:', notificationTitle, notificationOptions);
+//   // ブラウザに通知を表示
+//   self.registration.showNotification(notificationTitle, notificationOptions);
+// });
 
 // 通知クリック時の遷移
 self.addEventListener('notificationclick', function (event) {

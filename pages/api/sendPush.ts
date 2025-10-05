@@ -49,42 +49,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const registrationTokens = tokens.map((t) => t.fcm_token);
 
     // メッセージの作成
+    // const message: admin.messaging.MulticastMessage = {
+    //   tokens: registrationTokens,
+    //   data: {
+    //     title,
+    //     body,
+    //     ...stringifiedData, // 既存のデータ
+    //     chat_id: chatId,
+    //   },
+    // };
+
+    // メッセージの作成
     const message: admin.messaging.MulticastMessage = {
       tokens: registrationTokens,
-      // notification: {
-      //   title,
-      //   body,
-      // },
-      data: {
+      // 1. notificationフィールドを含める（Androidのフォアグラウンド/バックグラウンドの挙動に影響）
+      notification: {
         title,
         body,
-        ...stringifiedData, // 既存のデータ
-        chat_id: chatId,
       },
-      // // android: {
-      //   notification: {
-      //     title,
-      //     body,
-      //     channelId: 'chat_messages',
-      //     priority: 'high',
-      //     defaultSound: true,
-      //   },
-      //   data: {
-      //     ...stringifiedData, // 既存のデータ
-      //     chat_id: chatId,
-      //   },
-      // },
-      // apns: {
-      //   payload: {
-      //     aps: {
-      //       alert: { title: title, body: body },
-      //       sound: 'default',
-      //       badge: 1,
-      //     },
-      //     ...stringifiedData,
-      //     chat_id: chatId,
-      //   },
-      // },
+      // 2. dataフィールドを含める（メッセージの内容をアプリに渡す）
+      data: {
+        chat_id: chatId,
+        // ... 他のカスタムデータ
+      },
+
+      // 3. iOS (APNs) の設定を含める
+      apns: {
+        payload: {
+          aps: {
+            // 通知バナー表示のために alert と sound を設定
+            alert: {
+              title: title,
+              body: body,
+            },
+            sound: 'default',
+
+            // onBackgroundMessage をトリガーするために content-available: 1 を設定
+            'content-available': 1, // 🚨 これで onBackgroundMessage がバックグラウンドで呼ばれる
+          },
+          // カスタムデータは aps の外に配置（ベストプラクティス）
+          chat_id: chatId,
+          // ... 他のカスタムデータ
+        },
+      },
+
+      // 4. Android (FCM) の設定を含める
+      android: {
+        notification: {
+          title,
+          body,
+          channelId: 'chat_messages',
+          priority: 'high',
+          defaultSound: true,
+        },
+      },
     };
 
     try {
