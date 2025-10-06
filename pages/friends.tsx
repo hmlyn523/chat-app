@@ -25,10 +25,10 @@ export default function FriendsPage() {
   const isFriendsActive = router.pathname === '/friends';
 
   return (
-    <div className="max-w-md mx-auto min-h-screen flex flex-col pt-24 bg-gray-50">
+    <div className="max-w-md mx-auto min-h-screen flex flex-col pt-16 bg-gray-50">
       {/* コンテンツ（スクロール可能、フッター高さ分のボトムパディング追加） */}
-      <div className="flex-1 overflow-y-auto px-4 space-y-8 py-4 pb-[120px]">
-        <FriendRequestList currentUserId={currentUserId} />
+      <div className="flex-1 overflow-y-auto px-4 space-y-8 py-4 pb-20">
+        {/* <FriendRequestList currentUserId={currentUserId} /> */}
         <UserList currentUserId={currentUserId} />
       </div>
 

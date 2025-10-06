@@ -1,4 +1,3 @@
-// types/index.ts
 // アプリケーション全体で使用される主要な型定義
 
 // ====================
@@ -23,17 +22,6 @@ export interface RawUser {
     user_id: string;
     nickname?: string | null;
   } | null;
-}
-
-/**
- * フレンドリクエスト
- */
-export interface FriendRequest {
-  id: string;
-  sender_id: string;
-  receiver_id: string;
-  status: 'pending' | 'accepted' | 'rejected';
-  created_at?: string;
 }
 
 // ====================
@@ -98,14 +86,6 @@ export interface RawChatMemberForHeader {
   };
 }
 
-/**
- * チャットメンバー（表示用）
- */
-export interface ChatMember extends UserProfile {
-  joined_at?: string;
-  last_read_at?: string;
-}
-
 // ====================
 // その他の型
 // ====================
@@ -131,3 +111,10 @@ export interface Message {
   updated_at: string;
   sender_nickname?: string; // 表示用に追加
 }
+
+// ====================
+// フレンド関連（friend.tsからの再エクスポート）
+// ====================
+
+// friend.tsから全型を再エクスポート（重複削除）
+export * from './friend';
