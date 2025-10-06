@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { supabase } from 'lib/supabaseClient';
 import Link from 'next/link';
 import UserList from 'components/UserList';
-import FriendRequestList from 'components/FriendRequestList';
 
 export default function FriendsPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
