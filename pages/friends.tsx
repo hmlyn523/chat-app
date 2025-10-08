@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from 'lib/supabaseClient';
 import Link from 'next/link';
 import UserList from 'components/UserList';
+import Footer from 'components/Footer'; // パスを適宜調整
 
 export default function FriendsPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -31,27 +32,8 @@ export default function FriendsPage() {
         <UserList currentUserId={currentUserId} />
       </div>
 
-      {/* 固定アクションボタン（画面下部に横並びアイコン、position fixed） */}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 px-4 py-0 flex flex-row justify-around items-center space-x-4 z-10">
-        <button
-          className="flex flex-col items-center justify-center text-blue-500 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1 py-2"
-          onClick={() => router.push('/new-chat')}
-          aria-label="チャット作成"
-        >
-          <span className="text-2xl mb-1">💬</span>
-          <span className="text-xs">New Chat</span>
-        </button>
-        <Link
-          href="/friends"
-          className={`flex flex-col items-center justify-center transition-colors flex-1 py-2 ${
-            isFriendsActive ? 'text-blue-500' : 'text-gray-700 hover:text-gray-900'
-          }`}
-          aria-label="友達"
-        >
-          <span className="text-2xl mb-1">👥</span>
-          <span className="text-xs">friends</span>
-        </Link>
-      </div>
+      {/* フッターを共通コンポーネントに置き換え */}
+      <Footer pathname={router.pathname} />
     </div>
   );
 }

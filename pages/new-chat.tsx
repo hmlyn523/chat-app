@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@supabase/auth-helpers-react';
 import { supabase } from 'lib/supabaseClient';
 import { useRouter } from 'next/router';
+import Footer from 'components/Footer'; // パスを適宜調整
 
 export default function NewChat() {
   const [chatName, setChatName] = useState('');
@@ -9,6 +10,7 @@ export default function NewChat() {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const user = useUser();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchApprovedFriends = async () => {
@@ -142,6 +144,8 @@ export default function NewChat() {
           チャット作成
         </button>
       </div>
+      {/* フッターを共通コンポーネントに置き換え */}
+      <Footer pathname={router.pathname} />
     </div>
   );
 }

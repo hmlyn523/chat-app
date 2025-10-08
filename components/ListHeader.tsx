@@ -63,15 +63,8 @@ export default function ListHeader() {
     <>
       <header className="fixed top-0 left-0 right-0 z-10 p-4 bg-gray-100 flex justify-between items-center shadow">
         <div className="flex items-center gap-2">
-          <button
-            onClick={showBackButton ? handleBack : undefined}
-            className={`text-2xl font-bold mr-2 ${
-              showBackButton ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            {showBackButton ? '←' : ''}
-          </button>
-          <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
+          {/* <h1 className="text-2xl font-bold">{getPageTitle()}</h1> */}
+          <h1 className="text-2xl font-bold">24Chat</h1>
         </div>
 
         {/* 右側のプロフィール開閉ボタン */}
