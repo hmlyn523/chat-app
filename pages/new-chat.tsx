@@ -25,6 +25,7 @@ export default function NewChat() {
 
       if (error) {
         console.error('フレンド取得エラー', error);
+        setIsLoading(false);
         return;
       }
 
@@ -35,6 +36,7 @@ export default function NewChat() {
 
       if (friendIds.length === 0) {
         setUsers([]); // 該当なし
+        setIsLoading(false);
         return;
       }
 
@@ -46,10 +48,12 @@ export default function NewChat() {
 
       if (usersError) {
         console.error('ユーザー情報取得エラー', usersError);
+        setIsLoading(false);
         return;
       }
 
       setUsers(friendUsers ?? []);
+      setIsLoading(false);
     };
 
     fetchApprovedFriends();
@@ -63,7 +67,7 @@ export default function NewChat() {
 
   const createChat = async () => {
     if (selectedUserIds.length === 0 || !user) {
-      alert('Please select at least one person.');
+      alert('少なくとも1人を選択してください。');
       return;
     }
 
@@ -77,7 +81,7 @@ export default function NewChat() {
       .single();
 
     if (chatError || !chat) {
-      alert('Failed to create chat.');
+      alert('チャットの作成に失敗しました。');
       return;
     }
 
@@ -90,61 +94,94 @@ export default function NewChat() {
     );
 
     if (memberError) {
-      alert('Failed to add member.');
+      alert('メンバーの追加に失敗しました。');
       return;
     }
 
     router.push(`/chat/${chat.id}`);
   };
 
+  // セッションがnullの場合のローディング
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-500">リダイレクト中...</p>
+      </div>
+    );
+  }
+
+  // データロード中
+  if (isLoading) {
+    return (
+      <div className="max-w-md mx-auto min-h-screen flex flex-col pt-24 bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">読み込み中...</p>
+          </div>
+        </div>
+        <Footer pathname={router.pathname} />
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-md mx-auto px-4 pt-24 pb-10">
-      {selectedUserIds.length > 1 && (
-        <input
-          placeholder="Loop name (optional)"
-          className="w-full mb-4 px-3 py-2 border rounded shadow-sm"
-          value={chatName}
-          onChange={(e) => setChatName(e.target.value)}
-        />
-      )}
+    <div className="max-w-md mx-auto min-h-screen flex flex-col pt-24 bg-gray-50">
+      {/* コンテンツ（スクロール可能、フッター高さ分のボトムパディング追加） */}
+      <div className="flex-1 overflow-y-auto px-4 space-y-4 py-4 pb-[120px]">
+        {/* グループ名入力（複数選択時のみ） */}
+        {selectedUserIds.length > 1 && (
+          <input
+            placeholder="グループ名 (オプション)"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={chatName}
+            onChange={(e) => setChatName(e.target.value)}
+          />
+        )}
 
-      <div className="mb-6 flex flex-col items-center">
-        <p className="font-semibold mb-2 w-full text-left">メンバーを選択：</p>
-        <ul className="space-y-2 w-full max-w-xs">
-          {users.map((u) => {
-            const isChecked = selectedUserIds.includes(u.id);
-            const nickname = u.user_profiles?.nickname || u.email;
-            return (
-              <li
-                key={u.id}
-                className={`flex items-center justify-between border px-3 py-2 rounded shadow-sm ${
-                  isChecked ? 'bg-blue-50' : 'bg-white'
-                }`}
-              >
-                <label className="flex items-center w-full cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleUser(u.id)}
-                    className="mr-3"
-                  />
-                  <span className="text-sm">{nickname}</span>
-                </label>
+        {/* メンバーリスト */}
+        <div className="flex flex-col items-center">
+          <p className="font-semibold mb-2 w-full text-left text-gray-900">メンバーを選択：</p>
+          <ul className="space-y-2 w-full max-w-xs">
+            {users.length === 0 ? (
+              <li className="text-center text-gray-500 py-4">
+                友達がまだいません。友達を追加しましょう！
               </li>
-            );
-          })}
-        </ul>
+            ) : (
+              users.map((u) => {
+                const isChecked = selectedUserIds.includes(u.id);
+                const nickname =
+                  u.user_profiles?.nickname || u.email?.split('@')[0] || '不明なユーザー';
+                return (
+                  <li
+                    key={u.id}
+                    className={`flex items-center justify-between border border-gray-300 px-3 py-2 rounded-lg shadow-sm cursor-pointer transition-colors ${
+                      isChecked ? 'bg-blue-50 border-blue-300' : 'bg-white hover:bg-gray-50'
+                    }`}
+                    onClick={() => toggleUser(u.id)}
+                  >
+                    <span className="text-sm text-gray-900 flex-1">{nickname}</span>
+                    {isChecked && <span className="text-blue-500 text-sm font-medium">✓</span>}
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>
+
+        {/* 作成ボタン */}
+        <div className="flex justify-center">
+          <button
+            onClick={createChat}
+            disabled={selectedUserIds.length === 0}
+            className="w-5/6 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            {selectedUserIds.length === 0 ? 'メンバーを選択してください' : 'チャット作成'}
+          </button>
+        </div>
       </div>
 
-      <div className="flex justify-center">
-        <button
-          onClick={createChat}
-          className="w-5/6 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded"
-        >
-          チャット作成
-        </button>
-      </div>
-      {/* フッターを共通コンポーネントに置き換え */}
+      {/* フッター */}
       <Footer pathname={router.pathname} />
     </div>
   );
